@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, MoreVertical, ChevronRight, ChevronLeft, User as UserIcon } from 'lucide-react';
-import { getProjectsApi, createProjectApi, deleteProjectApi } from '../api/projects.api';
+import { getProjectsApi, deleteProjectApi } from '../api/projects.api';
 import type { Project } from '../types';
 
 export const Projects: React.FC = () => {
@@ -17,16 +17,6 @@ export const Projects: React.FC = () => {
 
   // Active row dropdown state
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
-
-  // Modal State
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
-  const [newSubtitle, setNewSubtitle] = useState('');
-  const [newLead, setNewLead] = useState('أحمد محمود');
-  const [newDueDate, setNewDueDate] = useState('24 أكتوبر 2024');
-  const [newStatus, setNewStatus] = useState<'in-progress' | 'critical' | 'on-hold' | 'completed'>('in-progress');
-  const [newProgress, setNewProgress] = useState(25);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Load Projects from API
   const fetchProjects = async () => {
@@ -44,33 +34,6 @@ export const Projects: React.FC = () => {
   useEffect(() => {
     fetchProjects();
   }, []);
-
-  // Handle Project Creation
-  const handleCreateProject = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTitle) return;
-
-    try {
-      setIsSubmitting(true);
-      const res = await createProjectApi({
-        title: newTitle,
-        subtitle: newSubtitle || 'تكامل الأنظمة والبنية التحتية',
-        leadName: newLead,
-        dueDate: newDueDate,
-        status: newStatus,
-        progress: Number(newProgress),
-      });
-
-      setProjects([res.data, ...projects]);
-      setIsModalOpen(false);
-      setNewTitle('');
-      setNewSubtitle('');
-    } catch (err: any) {
-      alert(err.message || 'فشل إنشاء المشروع');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   // Handle Project Deletion
   const handleDeleteProject = async (id: string) => {
@@ -148,7 +111,7 @@ export const Projects: React.FC = () => {
 
         {/* New Project Button */}
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => navigate('/projects/new')}
           className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-md transition-colors text-xs flex items-center gap-2 self-end sm:self-auto"
         >
           <Plus className="w-4 h-4" />
@@ -309,109 +272,6 @@ export const Projects: React.FC = () => {
         </div>
 
       </div>
-
-      {/* Create Project Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white border border-slate-200 rounded-md p-6 w-full max-w-md space-y-4">
-            <h2 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3">
-              إنشاء مشروع جديد
-            </h2>
-
-            <form onSubmit={handleCreateProject} className="space-y-3 text-xs">
-              <div className="space-y-1">
-                <label className="block font-semibold text-slate-700">عنوان المشروع</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="مثال: Alpha-Centauri Pipeline"
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full border border-slate-300 rounded-md p-2 focus:border-blue-600 focus:outline-none"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="block font-semibold text-slate-700">الوصف الفرعي</label>
-                <input
-                  type="text"
-                  placeholder="مثال: Infrastructure Optimization"
-                  value={newSubtitle}
-                  onChange={(e) => setNewSubtitle(e.target.value)}
-                  className="w-full border border-slate-300 rounded-md p-2 focus:border-blue-600 focus:outline-none"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="block font-semibold text-slate-700">المسؤول (Lead)</label>
-                  <input
-                    type="text"
-                    value={newLead}
-                    onChange={(e) => setNewLead(e.target.value)}
-                    className="w-full border border-slate-300 rounded-md p-2 focus:border-blue-600 focus:outline-none"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="block font-semibold text-slate-700">تاريخ الاستحقاق</label>
-                  <input
-                    type="text"
-                    value={newDueDate}
-                    onChange={(e) => setNewDueDate(e.target.value)}
-                    className="w-full border border-slate-300 rounded-md p-2 focus:border-blue-600 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="block font-semibold text-slate-700">الحالة</label>
-                  <select
-                    value={newStatus}
-                    onChange={(e) => setNewStatus(e.target.value as any)}
-                    className="w-full border border-slate-300 rounded-md p-2 focus:border-blue-600 focus:outline-none"
-                  >
-                    <option value="in-progress">قيد التنفيذ</option>
-                    <option value="critical">حرج</option>
-                    <option value="on-hold">معلق</option>
-                    <option value="completed">مكتمل</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="block font-semibold text-slate-700">نسبة الإنجاز (%)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={newProgress}
-                    onChange={(e) => setNewProgress(Number(e.target.value))}
-                    className="w-full border border-slate-300 rounded-md p-2 focus:border-blue-600 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-slate-300 rounded-md text-slate-600 hover:bg-slate-50 font-medium"
-                >
-                  إلغاء
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium"
-                >
-                  {isSubmitting ? 'جاري الحفظ...' : 'حفظ المشروع'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
     </div>
   );

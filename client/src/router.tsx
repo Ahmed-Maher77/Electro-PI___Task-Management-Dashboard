@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Projects from './pages/Projects';
+import CreateProject from './pages/CreateProject';
 import ProjectDetails from './pages/ProjectDetails';
 import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
@@ -44,16 +45,20 @@ export const router = createBrowserRouter([
             element: <Projects />,
           },
           {
+            path: '/projects/new',
+            element: <CreateProject />,
+          },
+          {
             path: '/projects/:projectId',
             element: <ProjectDetails />,
           },
           {
             path: '/tasks',
-            element: <Dashboard />, // Reuses dashboard / tasks overview
+            element: <Dashboard />,
           },
           {
             path: '/team',
-            element: <Profile />, // Reuses team / profile overview
+            element: <Profile />,
           },
           {
             path: '/profile',
