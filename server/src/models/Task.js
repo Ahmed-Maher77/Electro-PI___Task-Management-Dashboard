@@ -1,6 +1,6 @@
-import { Schema, model } from 'mongoose';
+import mongoose from 'mongoose';
 
-const taskSchema = new Schema(
+const taskSchema = new mongoose.Schema(
   {
     title: {
       type: String,
@@ -22,12 +22,12 @@ const taskSchema = new Schema(
       default: 'medium',
     },
     projectId: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'Project',
       required: true,
     },
     assignedTo: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
     dueDate: {
@@ -39,4 +39,4 @@ const taskSchema = new Schema(
   }
 );
 
-export const Task = model('Task', taskSchema);
+export const Task = mongoose.model('Task', taskSchema);
