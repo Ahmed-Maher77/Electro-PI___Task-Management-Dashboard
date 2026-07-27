@@ -8,10 +8,11 @@ const api = axios.create({
   },
 });
 
+// Interceptor to handle standardized response or extract error message
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const message = error.response?.data?.message || 'An unexpected error occurred';
+    const message = error.response?.data?.message || 'حدث خطأ غير متوقع، يرجى المحاولة لاحقاً';
     return Promise.reject(new Error(message));
   }
 );

@@ -1,41 +1,113 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { loginApi } from '../api/auth.api';
+import { setUser } from '../store/authSlice';
+import { Input } from '../components/Input';
+import { AuthHeader } from '../components/AuthHeader';
+import { AuthFooter } from '../components/AuthFooter';
+import { loginSchema, type LoginFormData } from '../utils/validators';
 
 export const Login: React.FC = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [serverError, setServerError] = useState('');
+
+  // Form setup with React Hook Form and Zod validation
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      rememberMe: false,
+    },
+  });
+
+  // Handle Login submission
+  const onSubmit = async (data: LoginFormData) => {
+    setServerError('');
+    try {
+      const response = await loginApi(data);
+      dispatch(setUser(response.data.user));
+      navigate('/dashboard');
+    } catch (err: any) {
+      setServerError(err.message || 'فشل تسجيل الدخول، يرجى التأكد من صحة البيانات');
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 text-slate-100">
-      <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-xl p-8 shadow-xl">
-        <h2 className="text-2xl font-bold text-center mb-6">Login to TaskDash</h2>
-        <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Email</label>
-            <input
-              type="email"
-              placeholder="user@example.com"
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500"
-            />
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md p-8 text-center space-y-6">
+        
+        <AuthHeader subtitle="وصول المستوى المؤسسي" />
+
+        {serverError && (
+          <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-md text-right">
+            {serverError}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Password</label>
+        )}
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+          <Input
+            label="البريد الإلكتروني"
+            type="email"
+            placeholder="name@company.com"
+            error={errors.email?.message}
+            {...register('email')}
+          />
+
+          <Input
+            label="كلمة المرور"
+            type="password"
+            placeholder="••••••••"
+            error={errors.password?.message}
+            topRightLabel={
+              <a href="#forgot" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline text-xs">
+                نسيت كلمة المرور؟
+              </a>
+            }
+            {...register('password')}
+          />
+
+          <div className="flex items-center gap-2 pt-1 text-right">
             <input
-              type="password"
-              placeholder="••••••••"
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500"
+              id="remember"
+              type="checkbox"
+              className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+              {...register('rememberMe')}
             />
+            <label htmlFor="remember" className="text-xs text-slate-600 select-none cursor-pointer">
+              تذكرني
+            </label>
           </div>
+
           <button
             type="submit"
-            className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
+            disabled={isSubmitting}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium py-2.5 px-4 rounded-md transition-colors text-sm"
           >
-            Sign In
+            {isSubmitting ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
           </button>
         </form>
-        <p className="mt-4 text-center text-sm text-slate-400">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-indigo-400 hover:underline">
-            Register
-          </Link>
-        </p>
+
+        <div className="border-t border-slate-100 pt-4">
+          <AuthFooter
+            promptText="ليس لديك حساب؟"
+            linkText="إنشاء حساب"
+            linkTo="/register"
+            footerLinks={[
+              { label: 'سياسة الخصوصية', href: '#privacy' },
+              { label: 'شروط الخدمة', href: '#terms' },
+            ]}
+          />
+        </div>
+
       </div>
     </div>
   );

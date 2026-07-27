@@ -11,7 +11,6 @@ import { env } from './config/env.js';
 const app = express();
 
 app.use(helmet());
-
 app.use(
   cors({
     origin: env.CLIENT_URL,
@@ -25,15 +24,17 @@ if (env.NODE_ENV !== 'test') {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 app.use(cookieParser());
 
+// Mount API routes
 app.use('/api', routes);
 
+// 404 handler
 app.use((_req, _res, next) => {
-  next(new ApiError(404, 'Resource not found on this server'));
+  next(new ApiError(404, 'المسار غير موجود على هذا الخادم'));
 });
 
+// Global error handler
 app.use(errorMiddleware);
 
 export default app;

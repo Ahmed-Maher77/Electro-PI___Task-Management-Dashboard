@@ -10,7 +10,7 @@ interface AuthState {
 const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
-  isLoading: false,
+  isLoading: true, // Start as loading to verify auth status on mount
 };
 
 export const authSlice = createSlice({

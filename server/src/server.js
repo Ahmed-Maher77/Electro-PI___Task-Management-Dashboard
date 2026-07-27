@@ -5,13 +5,12 @@ import { env } from './config/env.js';
 const startServer = async () => {
   try {
     await connectDB();
-
     const PORT = parseInt(env.PORT, 10) || 5000;
     app.listen(PORT, () => {
-      console.log(`Server running in ${env.NODE_ENV} mode on port ${PORT}`);
+      console.log(`الخادم يعمل في وضع ${env.NODE_ENV} على المنفذ ${PORT}`);
     });
   } catch (error) {
-    console.error('Failed to start server:', error);
+    console.error('فشل بدء الخادم:', error);
     process.exit(1);
   }
 };

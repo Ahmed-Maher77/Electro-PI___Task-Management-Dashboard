@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  color-scheme: dark;
+  font-family: 'Cairo', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background-color: #020617;
-  color: #f8fafc;
+  background-color: #f8fafc;
+  color: #1e293b;
 }
 
-#root {
-  min-height: 100vh;
+/* Remove default focus outline bloat, clean standard ring */
+input:focus, button:focus {
+  outline: none;
 }

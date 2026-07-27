@@ -6,18 +6,18 @@ export const Projects: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Projects</h1>
-          <p className="text-slate-400 text-sm">Manage and track your active projects.</p>
+          <h1 className="text-xl font-bold text-slate-900">المشاريع</h1>
+          <p className="text-slate-500 text-xs mt-1">إدارة ومتابعة المشاريع الخاصة بك.</p>
         </div>
-        <button className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm">
-          + New Project
+        <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors text-xs">
+          + مشروع جديد
         </button>
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 text-center text-slate-400">
-        <p>No projects found. Create one to get started!</p>
-        <Link to="/projects/sample-id" className="text-indigo-400 text-xs hover:underline mt-2 block">
-          (View Sample Project Details)
+      <div className="bg-white border border-slate-200 rounded-md p-8 text-center text-slate-500 text-sm">
+        <p>لا توجد مشاريع حالياً. أنشئ مشروعاً جديداً للبدء!</p>
+        <Link to="/projects/sample-id" className="text-blue-600 text-xs hover:underline mt-2 inline-block">
+          (عرض مشروع تجريبي)
         </Link>
       </div>
     </div>
