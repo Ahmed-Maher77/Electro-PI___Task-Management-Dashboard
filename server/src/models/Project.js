@@ -4,7 +4,12 @@ const projectSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: [true, 'Project title is required'],
+      required: [true, 'عنوان المشروع مطلوب'],
+      trim: true,
+    },
+    subtitle: {
+      type: String,
+      default: '',
       trim: true,
     },
     description: {
@@ -17,10 +22,24 @@ const projectSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    leadName: {
+      type: String,
+      default: 'أحمد محمود',
+    },
+    dueDate: {
+      type: String,
+      default: '2024-12-31',
+    },
+    progress: {
+      type: Number,
+      min: 0,
+      max: 100,
+      default: 0,
+    },
     status: {
       type: String,
-      enum: ['active', 'completed', 'archived'],
-      default: 'active',
+      enum: ['in-progress', 'critical', 'on-hold', 'completed'],
+      default: 'in-progress',
     },
   },
   {

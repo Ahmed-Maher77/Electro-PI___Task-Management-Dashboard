@@ -1,5 +1,6 @@
 export interface User {
-  id: string;
+  id?: string;
+  _id?: string;
   name: string;
   email: string;
   role: 'user' | 'admin';
@@ -8,17 +9,23 @@ export interface User {
 }
 
 export interface Project {
-  id: string;
+  id?: string;
+  _id?: string;
   title: string;
-  description: string;
-  ownerId: string;
-  status: 'active' | 'completed' | 'archived';
+  subtitle?: string;
+  description?: string;
+  ownerId?: string;
+  leadName?: string;
+  dueDate?: string;
+  progress?: number;
+  status: 'in-progress' | 'critical' | 'on-hold' | 'completed';
   createdAt?: string;
   updatedAt?: string;
 }
 
 export interface Task {
-  id: string;
+  id?: string;
+  _id?: string;
   title: string;
   description?: string;
   status: 'todo' | 'in-progress' | 'done';
