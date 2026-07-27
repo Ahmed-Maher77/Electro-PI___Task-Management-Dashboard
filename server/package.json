@@ -1,13 +1,12 @@
 {
-  "name": "electro-pi-dahboard-server",
+  "name": "electro-pi-dashboard-server",
   "version": "1.0.0",
-  "description": "",
-  "license": "ISC",
-  "author": "Ahmed Maher Algohary",
+  "description": "Task Management Dashboard Backend API",
   "type": "module",
-  "main": "server.js",
+  "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -17,7 +16,6 @@
     "express": "^5.2.1",
     "express-validator": "^7.3.2",
     "helmet": "^8.3.0",
-    "json-web-token": "^4.0.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.8.1",
     "morgan": "^1.11.0"
