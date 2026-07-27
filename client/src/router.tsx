@@ -48,7 +48,19 @@ export const router = createBrowserRouter([
             element: <ProjectDetails />,
           },
           {
+            path: '/tasks',
+            element: <Dashboard />, // Reuses dashboard / tasks overview
+          },
+          {
+            path: '/team',
+            element: <Profile />, // Reuses team / profile overview
+          },
+          {
             path: '/profile',
+            element: <Profile />,
+          },
+          {
+            path: '/settings',
             element: <Profile />,
           },
         ],
