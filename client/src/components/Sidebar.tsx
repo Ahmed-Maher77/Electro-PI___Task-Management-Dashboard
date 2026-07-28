@@ -1,14 +1,8 @@
 import React from 'react';
+import type { SidebarProps } from '../types';
 import { SidebarHeader } from './sidebar/SidebarHeader';
 import { SidebarNav } from './sidebar/SidebarNav';
 import { SidebarActions } from './sidebar/SidebarActions';
-
-interface SidebarProps {
-  isCollapsed: boolean;
-  setIsCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
-  isMobileOpen: boolean;
-  setIsMobileOpen: React.Dispatch<React.SetStateAction<boolean>>;
-}
 
 export const Sidebar: React.FC<SidebarProps> = ({
   isCollapsed,
@@ -24,10 +18,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside
-      className={`bg-white text-slate-800 flex flex-col h-screen border-l border-slate-200  overflow-y-auto z-50 transition-all duration-300 ${
+      className={`bg-white text-slate-800 flex flex-col h-screen border-l border-slate-200 overflow-y-auto z-50 transition-all duration-300 fixed lg:sticky top-0 right-0 ${
         isCollapsed ? 'lg:w-20' : 'lg:w-56'
-      } ${
-        'fixed lg:sticky top-0 right-0'
       } ${
         isMobileOpen ? 'translate-x-0 w-64' : 'translate-x-full lg:translate-x-0'
       }`}

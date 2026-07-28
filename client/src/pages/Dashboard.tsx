@@ -5,9 +5,9 @@ import type { RootState } from '../store';
 import { getProjectsApi } from '../api/projects.api';
 import { getAllTasksApi, updateTaskApi } from '../api/tasks.api';
 import { getAllUsersApi } from '../api/auth.api';
-import type { Project, Task } from '../types';
+import type { Project, Task, ActivityItem } from '../types';
 import { StatCards } from '../components/dashboard/StatCards';
-import { RecentActivity, type ActivityItem } from '../components/dashboard/RecentActivity';
+import { RecentActivity } from '../components/dashboard/RecentActivity';
 import { RecentTasksList } from '../components/dashboard/RecentTasksList';
 
 export const Dashboard: React.FC = () => {

@@ -5,11 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import type { RootState } from '../store';
 import { getProjectsApi } from '../api/projects.api';
 import { getAllTasksApi } from '../api/tasks.api';
-import type { Project, Task } from '../types';
-
-interface HeaderProps {
-  onToggleMobileMenu?: () => void;
-}
+import type { Project, Task, HeaderProps } from '../types';
 
 export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
   const navigate = useNavigate();

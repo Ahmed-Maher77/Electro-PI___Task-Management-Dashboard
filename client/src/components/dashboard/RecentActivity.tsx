@@ -2,23 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { Spinner } from '../Loader';
-
-export interface ActivityItem {
-  id: string;
-  rawId: string;
-  type: 'project' | 'task';
-  title: string;
-  subtitle: string;
-  date: string;
-  icon: React.ComponentType<{ className?: string }>;
-  color: string;
-}
-
-interface RecentActivityProps {
-  isLoading: boolean;
-  projectsCount: number;
-  activities: ActivityItem[];
-}
+import type { RecentActivityProps } from '../../types';
 
 export const RecentActivity: React.FC<RecentActivityProps> = ({
   isLoading,

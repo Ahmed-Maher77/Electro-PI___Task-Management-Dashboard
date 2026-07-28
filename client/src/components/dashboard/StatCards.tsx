@@ -2,16 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Rocket, ClipboardList, CheckCircle2, Users } from 'lucide-react';
 import { Spinner } from '../Loader';
-
-interface StatCardsProps {
-  isLoading: boolean;
-  projectsCount: number;
-  pendingTasksCount: number;
-  highPriorityCount: number;
-  completedTasksCount: number;
-  completionRate: number;
-  teamCount: number;
-}
+import type { StatCardsProps } from '../../types';
 
 export const StatCards: React.FC<StatCardsProps> = ({
   isLoading,

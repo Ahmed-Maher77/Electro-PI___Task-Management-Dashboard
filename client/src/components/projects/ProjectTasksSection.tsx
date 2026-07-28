@@ -1,26 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Filter, SlidersHorizontal, MoreVertical, ChevronRight, ChevronLeft, User as UserIcon, X } from 'lucide-react';
-import type { Task } from '../../types';
-
-interface ProjectTasksSectionProps {
-  tasks: Task[];
-  onTaskStatusChange: (taskId: string, status: Task['status']) => void;
-  onDeleteTask: (taskId: string) => void;
-  onCreateTask: (e: React.FormEvent) => void;
-  isTaskModalOpen: boolean;
-  setIsTaskModalOpen: (open: boolean) => void;
-  newTaskTitle: string;
-  setNewTaskTitle: (val: string) => void;
-  newTaskDesc: string;
-  setNewTaskDesc: (val: string) => void;
-  newTaskAssignee: string;
-  setNewTaskAssignee: (val: string) => void;
-  newTaskStatus: 'todo' | 'doing' | 'review' | 'done';
-  setNewTaskStatus: (val: 'todo' | 'doing' | 'review' | 'done') => void;
-  newTaskPriority: 'low' | 'medium' | 'high';
-  setNewTaskPriority: (val: 'low' | 'medium' | 'high') => void;
-  isSubmittingTask: boolean;
-}
+import type { Task, ProjectTasksSectionProps } from '../../types';
 
 export const ProjectTasksSection: React.FC<ProjectTasksSectionProps> = ({
   tasks,
@@ -62,7 +42,7 @@ export const ProjectTasksSection: React.FC<ProjectTasksSectionProps> = ({
     })
     .sort((a, b) => {
       if (sortOrder === 'priority') {
-        const pMap = { high: 3, medium: 2, low: 1 };
+        const pMap = { urgent: 4, high: 3, medium: 2, low: 1 };
         return (pMap[b.priority || 'low'] || 0) - (pMap[a.priority || 'low'] || 0);
       }
       return 0;
