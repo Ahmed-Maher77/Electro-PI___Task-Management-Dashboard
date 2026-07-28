@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { UserPlus, Mail, Shield, MoreVertical, Search, Loader2 } from 'lucide-react';
+import { UserPlus, Mail, Shield, MoreVertical, Search } from 'lucide-react';
 import { getAllUsersApi } from '../api/auth.api';
+import { Spinner } from '../components/Loader';
 
 interface TeamMember {
   id: string;
@@ -128,9 +129,9 @@ export const Team: React.FC = () => {
       {/* Team Table Card */}
       <div className="bg-white border border-slate-200 rounded-md overflow-hidden">
         {isLoading ? (
-          <div className="p-12 text-center text-slate-500 flex items-center justify-center gap-2 text-xs">
-            <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
-            <span>جاري تحميل قائمة الفريق الحقيقية من الخادم...</span>
+          <div className="p-12 text-center text-slate-500 flex items-center justify-center gap-2 text-xs font-semibold">
+            <Spinner size="sm" />
+            <span>جاري تحميل أعضاء الفريق...</span>
           </div>
         ) : (
           <div className="overflow-x-auto">

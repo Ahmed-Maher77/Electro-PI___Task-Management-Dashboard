@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   HelpCircle,
   BookOpen,
@@ -11,6 +12,8 @@ import {
 } from 'lucide-react';
 
 export const Support: React.FC = () => {
+  const navigate = useNavigate();
+
   // Support Form State
   const [subject, setSubject] = useState('');
   const [category, setCategory] = useState('infrastructure');
@@ -37,7 +40,7 @@ export const Support: React.FC = () => {
     },
     {
       q: 'كيف يمكن تصفية ومتابعة المهام والمشاريع الحرجة؟',
-      a: 'في صفحة "المشاريع"، يمكنك استخدام قائمة التصفية حسب الحالة واختيار "حرج" أو "قيد التنفيذ" لمتابعة التقدم ونسبة الإنجاز فورياً.',
+      a: 'في صفحة "المشاريع"، يمكنك استخدام قائمة التصفية حسب الحالة وااختيار "حرج" أو "قيد التنفيذ" لمتابعة التقدم ونسبة الإنجاز فورياً.',
     },
   ];
 
@@ -68,7 +71,10 @@ export const Support: React.FC = () => {
       {/* Quick Access Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
         
-        <div className="bg-white border border-slate-200 rounded-md p-5 space-y-2 hover:bg-slate-50/50 transition-colors cursor-pointer">
+        <div
+          onClick={() => navigate('/docs')}
+          className="bg-white border border-slate-200 rounded-md p-5 space-y-2 hover:bg-slate-50/80 transition-colors cursor-pointer"
+        >
           <div className="w-9 h-9 rounded bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
             <BookOpen className="w-5 h-5" />
           </div>
@@ -78,7 +84,10 @@ export const Support: React.FC = () => {
           </p>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-md p-5 space-y-2 hover:bg-slate-50/50 transition-colors cursor-pointer">
+        <div
+          onClick={() => alert('تم الانتقال إلى تذاكر الدعم')}
+          className="bg-white border border-slate-200 rounded-md p-5 space-y-2 hover:bg-slate-50/80 transition-colors cursor-pointer"
+        >
           <div className="w-9 h-9 rounded bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
             <Ticket className="w-5 h-5" />
           </div>
@@ -88,11 +97,14 @@ export const Support: React.FC = () => {
           </p>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-md p-5 space-y-2 hover:bg-slate-50/50 transition-colors cursor-pointer">
+        <div
+          onClick={() => navigate('/status')}
+          className="bg-white border border-slate-200 rounded-md p-5 space-y-2 hover:bg-slate-50/80 transition-colors cursor-pointer"
+        >
           <div className="w-9 h-9 rounded bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
             <Activity className="w-5 h-5" />
           </div>
-          <h3 className="font-bold text-slate-900 text-sm">حالة الأنظمة الحية</h3>
+          <h3 className="font-bold text-slate-900 text-sm">حالة الأنظمة الحية (Status)</h3>
           <p className="text-slate-500 text-[11px] leading-relaxed">
             جميع خوادم ومكونات النظام تعمل بكفاءة عالية بنسبة تشغيل 99.99%.
           </p>

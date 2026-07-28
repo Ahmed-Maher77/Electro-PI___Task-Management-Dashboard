@@ -15,6 +15,8 @@ import Team from './pages/Team';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Support from './pages/Support';
+import Docs from './pages/Docs';
+import Status from './pages/Status';
 import NotFound from './pages/NotFound';
 
 export const router = createBrowserRouter([
@@ -80,6 +82,14 @@ export const router = createBrowserRouter([
           {
             path: '/support',
             element: <Support />,
+          },
+          {
+            path: '/docs',
+            element: <Docs />,
+          },
+          {
+            path: '/status',
+            element: <Status />,
           },
         ],
       },

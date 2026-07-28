@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../store';
 import { getMeApi } from '../api/auth.api';
 import { setUser } from '../store/authSlice';
+import { Loader } from '../components/Loader';
 
 export const ProtectedRoute: React.FC = () => {
   const dispatch = useDispatch();
@@ -19,11 +20,7 @@ export const ProtectedRoute: React.FC = () => {
   }, [dispatch, isLoading]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex justify-center items-center text-sm font-medium text-slate-500">
-        جاري التحقق من الجلسة...
-      </div>
-    );
+    return <Loader message="جاري التحقق من أمان الجلسة..." submessage="تطابق شهادات الاعتماد والوصول المؤسسي" />;
   }
 
   if (!isAuthenticated) {

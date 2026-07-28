@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Filter, Trash2, Loader2, CheckSquare } from 'lucide-react';
+import { Plus, Search, Filter, Trash2, CheckSquare } from 'lucide-react';
 import { getAllTasksApi, deleteTaskApi } from '../api/tasks.api';
 import type { Task } from '../types';
+import { Spinner } from '../components/Loader';
 
 export const Tasks: React.FC = () => {
   const navigate = useNavigate();
@@ -128,9 +129,9 @@ export const Tasks: React.FC = () => {
       {/* Tasks Table Card */}
       <div className="bg-white border border-slate-200 rounded-md overflow-hidden">
         {isLoading ? (
-          <div className="p-12 text-center text-slate-500 flex items-center justify-center gap-2 text-xs">
-            <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
-            <span>جاري تحميل المهام من قاعدة البيانات...</span>
+          <div className="p-12 text-center text-slate-500 flex items-center justify-center gap-2 text-xs font-semibold">
+            <Spinner size="sm" />
+            <span>جاري تحميل المهام...</span>
           </div>
         ) : (
           <div className="overflow-x-auto">
