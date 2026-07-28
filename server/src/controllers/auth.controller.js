@@ -30,6 +30,24 @@ export const getMe = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, { user }, 'تم جلب بيانات المستخدم بنجاح'));
 });
 
+// Update Profile Controller
+export const updateProfile = asyncHandler(async (req, res) => {
+  const user = await authService.updateProfile(req.user.id, req.body);
+  res.status(200).json(new ApiResponse(200, user, 'تم تحديث الملف الشخصي بنجاح'));
+});
+
+// Update Password Controller
+export const updatePassword = asyncHandler(async (req, res) => {
+  await authService.updatePassword(req.user.id, req.body);
+  res.status(200).json(new ApiResponse(200, null, 'تم تحديث كلمة المرور بنجاح'));
+});
+
+// Get All Users Controller
+export const getAllUsers = asyncHandler(async (_req, res) => {
+  const users = await authService.getAllUsers();
+  res.status(200).json(new ApiResponse(200, users, 'تم جلب قائمة الفريق بنجاح'));
+});
+
 // Logout Controller
 export const logout = asyncHandler(async (_req, res) => {
   res.clearCookie('token', cookieOptions);

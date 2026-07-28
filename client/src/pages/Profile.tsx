@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Shield, Lock, Smartphone, Camera, Check, AlertCircle } from 'lucide-react';
+import { Shield, Lock, Smartphone, Camera, Check, AlertCircle, Loader2 } from 'lucide-react';
 import type { RootState } from '../store';
 import { setUser } from '../store/authSlice';
+import { updateProfileApi, updatePasswordApi } from '../api/auth.api';
 
 export const Profile: React.FC = () => {
   const dispatch = useDispatch();
@@ -12,30 +13,45 @@ export const Profile: React.FC = () => {
   const [name, setName] = useState(currentUser?.name || 'ألكسندر ستيرلينج');
   const [email, setEmail] = useState(currentUser?.email || 'alex.sterling@enterprise-dev.io');
   const [role] = useState('مهندس DevOps رئيسي (Lead DevOps Engineer)');
-  const [department, setDepartment] = useState('البنية التحتية السحابية (Cloud Infrastructure)');
+  const [department, setDepartment] = useState('البنية التحتية السحابية');
+
+  const [isProfileUpdating, setIsProfileUpdating] = useState(false);
   const [profileSuccessMsg, setProfileSuccessMsg] = useState('');
+  const [profileErrMsg, setProfileErrMsg] = useState('');
 
   // Password Form State
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  const [isPasswordUpdating, setIsPasswordUpdating] = useState(false);
   const [passwordMsg, setPasswordMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // 2FA State
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
 
-  // Handle Profile Update
-  const handleUpdateProfile = (e: React.FormEvent) => {
+  // Handle Profile Update via API
+  const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (currentUser) {
-      dispatch(setUser({ ...currentUser, name, email }));
+    setProfileSuccessMsg('');
+    setProfileErrMsg('');
+    try {
+      setIsProfileUpdating(true);
+      const res = await updateProfileApi({ name, email });
+      if (res.data) {
+        dispatch(setUser({ ...currentUser, ...res.data }));
+      }
+      setProfileSuccessMsg('تم تحديث المعلومات الشخصية في قاعدة البيانات بنجاح');
+      setTimeout(() => setProfileSuccessMsg(''), 3000);
+    } catch (err: any) {
+      setProfileErrMsg(err.message || 'فشل تحديث البيانات، يرجى إعادة المحاولة');
+    } finally {
+      setIsProfileUpdating(false);
     }
-    setProfileSuccessMsg('تم تحديث المعلومات الشخصية بنجاح');
-    setTimeout(() => setProfileSuccessMsg(''), 3000);
   };
 
-  // Handle Password Update
-  const handleUpdatePassword = (e: React.FormEvent) => {
+  // Handle Password Update via API
+  const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordMsg(null);
 
@@ -54,16 +70,24 @@ export const Profile: React.FC = () => {
       return;
     }
 
-    setPasswordMsg({ type: 'success', text: 'تم تحديث كلمة المرور بنجاح' });
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
+    try {
+      setIsPasswordUpdating(true);
+      await updatePasswordApi({ currentPassword, newPassword });
+      setPasswordMsg({ type: 'success', text: 'تم تحديث كلمة المرور في قاعدة البيانات بنجاح' });
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err: any) {
+      setPasswordMsg({ type: 'error', text: err.message || 'فشل تحديث كلمة المرور' });
+    } finally {
+      setIsPasswordUpdating(false);
+    }
   };
 
   // Handle Account Deletion
   const handleDeleteAccount = () => {
     if (confirm('هل أنت تأكد من رغبتك في حذف الحساب نهائياً؟ هذا الإجراء غير قابل للتراجع!')) {
-      alert('تم إرسال طلب حذف الحساب للإدارة.');
+      alert('تم تقديم طلب حذف الحساب.');
     }
   };
 
@@ -85,7 +109,7 @@ export const Profile: React.FC = () => {
           <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
             المعلومات الشخصية (PERSONAL INFORMATION)
           </h2>
-          <span className="text-[11px] font-mono text-slate-400">ID: USR-9942</span>
+          <span className="text-[11px] font-mono text-slate-400">ID: {currentUser?.id || 'USR-9942'}</span>
         </div>
 
         <form onSubmit={handleUpdateProfile} className="p-6 space-y-6">
@@ -97,6 +121,13 @@ export const Profile: React.FC = () => {
             </div>
           )}
 
+          {profileErrMsg && (
+            <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-md flex items-center gap-2">
+              <AlertCircle className="w-4 h-4" />
+              <span>{profileErrMsg}</span>
+            </div>
+          )}
+
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
             
             {/* Avatar with Edit Badge */}
@@ -104,7 +135,7 @@ export const Profile: React.FC = () => {
               <div className="w-20 h-20 rounded-full bg-slate-200 border-2 border-slate-300 flex items-center justify-center font-bold text-slate-700 text-2xl overflow-hidden">
                 {name.charAt(0).toUpperCase()}
               </div>
-              <div className="absolute bottom-0 left-0 bg-blue-600 text-white p-1 rounded-full border-2 border-white shadow-none">
+              <div className="absolute bottom-0 left-0 bg-blue-600 text-white p-1 rounded-full border-2 border-white">
                 <Camera className="w-3.5 h-3.5" />
               </div>
             </div>
@@ -164,9 +195,11 @@ export const Profile: React.FC = () => {
           <div className="flex justify-end pt-2">
             <button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-5 rounded-md transition-colors text-xs"
+              disabled={isProfileUpdating}
+              className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium py-2.5 px-5 rounded-md transition-colors text-xs flex items-center gap-2"
             >
-              تحديث الملف الشخصي
+              {isProfileUpdating && <Loader2 className="w-4 h-4 animate-spin" />}
+              <span>{isProfileUpdating ? 'جاري التحديث...' : 'تحديث الملف الشخصي'}</span>
             </button>
           </div>
 
@@ -256,9 +289,11 @@ export const Profile: React.FC = () => {
             <div className="flex justify-start pt-1">
               <button
                 type="submit"
-                className="bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-medium py-2 px-4 rounded-md transition-colors"
+                disabled={isPasswordUpdating}
+                className="bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-medium py-2 px-4 rounded-md transition-colors flex items-center gap-2"
               >
-                تحديث كلمة المرور
+                {isPasswordUpdating && <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-600" />}
+                <span>{isPasswordUpdating ? 'جاري الحفظ...' : 'تحديث كلمة المرور'}</span>
               </button>
             </div>
           </form>

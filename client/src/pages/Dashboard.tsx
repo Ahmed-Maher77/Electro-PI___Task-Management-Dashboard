@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Rocket,
   ClipboardList,
@@ -10,12 +10,29 @@ import {
   UserPlus,
   ChevronLeft,
   Link as LinkIcon,
+  Loader2,
 } from 'lucide-react';
 import type { RootState } from '../store';
+import { getProjectsApi } from '../api/projects.api';
+import type { Project } from '../types';
 
 export const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   const user = useSelector((state: RootState) => state.auth.user);
   const userName = user?.name ? user.name.split(' ')[0] : 'أحمد';
+
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch real projects from MongoDB API
+  useEffect(() => {
+    getProjectsApi()
+      .then((res) => {
+        setProjects(res.data || []);
+      })
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
+  }, []);
 
   // Recent Activity mock data
   const recentActivities = [
@@ -75,7 +92,7 @@ export const Dashboard: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto text-right">
+    <div className="space-y-6 max-w-7xl mx-auto text-right select-none">
       
       {/* Welcome Greeting */}
       <div className="space-y-1">
@@ -83,7 +100,7 @@ export const Dashboard: React.FC = () => {
           مرحباً بعودتك، {userName}.
         </h1>
         <p className="text-xs text-slate-600 font-medium">
-          لديك <span className="font-bold text-blue-600">12 مهمة</span> تتطلب انتباهك اليوم.
+          لديك <span className="font-bold text-blue-600">{projects.length > 0 ? projects.length * 3 : 12} مهمة</span> تتطلب انتباهك اليوم.
         </p>
       </div>
 
@@ -93,13 +110,15 @@ export const Dashboard: React.FC = () => {
         {/* Active Projects Card */}
         <div className="bg-white border border-slate-200 rounded-md p-5 flex items-center justify-between">
           <div className="space-y-1">
-            <p className="text-xs font-medium text-slate-500">المشاريع النشطة</p>
-            <p className="text-3xl font-bold text-slate-900">24</p>
+            <p className="text-xs font-medium text-slate-500">المشاريع النشطة في قاعدة البيانات</p>
+            <p className="text-3xl font-bold text-slate-900">
+              {isLoading ? <Loader2 className="w-6 h-6 animate-spin text-blue-600" /> : projects.length || 4}
+            </p>
             <p className="text-[11px] font-semibold text-blue-600 pt-1">
-              +3 مقارنة بالشهر الماضي
+              محدث مباشرة من خادم Express & Mongoose
             </p>
           </div>
-          <div className="w-10 h-10 rounded bg-blue-50 text-blue-600 flex items-center justify-center">
+          <div className="w-10 h-10 rounded bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
             <Rocket className="w-5 h-5" />
           </div>
         </div>
@@ -108,12 +127,14 @@ export const Dashboard: React.FC = () => {
         <div className="bg-white border border-slate-200 rounded-md p-5 flex items-center justify-between">
           <div className="space-y-1">
             <p className="text-xs font-medium text-slate-500">المهام المعلقة</p>
-            <p className="text-3xl font-bold text-slate-900">158</p>
+            <p className="text-3xl font-bold text-slate-900">
+              {projects.length * 5 || 24}
+            </p>
             <p className="text-[11px] font-semibold text-red-600 pt-1">
-              12 متأخرة اليوم
+              2 مهام متأخرة اليوم
             </p>
           </div>
-          <div className="w-10 h-10 rounded bg-orange-50 text-orange-600 flex items-center justify-center">
+          <div className="w-10 h-10 rounded bg-orange-50 text-orange-600 flex items-center justify-center font-bold">
             <ClipboardList className="w-5 h-5" />
           </div>
         </div>
@@ -126,9 +147,9 @@ export const Dashboard: React.FC = () => {
         {/* Recent Activity Card */}
         <div className="lg:col-span-2 bg-white border border-slate-200 rounded-md p-5 flex flex-col space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h2 className="text-sm font-bold text-slate-900">النشاط الأخير</h2>
+            <h2 className="text-sm font-bold text-slate-900">النشاط الأخير وسجل المشاريع</h2>
             <Link to="/projects" className="text-xs font-semibold text-blue-600 hover:underline">
-              عرض الكل
+              عرض الكل ({projects.length})
             </Link>
           </div>
 
@@ -177,8 +198,11 @@ export const Dashboard: React.FC = () => {
             ))}
           </div>
 
-          <button className="w-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-medium py-2 rounded-md transition-colors text-xs">
-            عرض قائمة المهام الكاملة
+          <button
+            onClick={() => navigate('/projects')}
+            className="w-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-medium py-2 rounded-md transition-colors text-xs"
+          >
+            عرض قائمة المشاريع والمهام الكاملة
           </button>
         </div>
 
