@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { HelpCircle, ChevronDown, ChevronUp, Search } from 'lucide-react';
 
 interface FaqItem {
   q: string;
@@ -43,34 +43,65 @@ const faqsData: FaqItem[] = [
 
 export const FaqAccordion: React.FC = () => {
   const [expandedFaq, setExpandedFaq] = useState<number | null>(0);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredFaqs = faqsData.filter(
+    (faq) =>
+      faq.q.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      faq.a.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="space-y-4 text-xs pt-2">
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
-        <HelpCircle className="w-5 h-5 text-blue-600" />
-        <h2 className="text-base font-bold text-slate-900">الأسئلة الشائعة (FAQ)</h2>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
+        <div className="flex items-center gap-2">
+          <HelpCircle className="w-5 h-5 text-blue-600" />
+          <h2 className="text-base font-bold text-slate-900">الأسئلة الشائعة (FAQ)</h2>
+        </div>
+
+        {/* Live Search Input */}
+        <div className="relative w-full sm:w-64">
+          <Search className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            placeholder="بحث في الأسئلة الشائعة..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-white border border-slate-300 rounded-md pr-8 pl-3 py-1.5 text-xs text-slate-800 focus:border-blue-600 focus:outline-none"
+          />
+        </div>
       </div>
 
       <div className="divide-y divide-slate-200">
-        {faqsData.map((faq, idx) => {
-          const isOpen = expandedFaq === idx;
-          return (
-            <div key={idx} className="py-3.5">
-              <button
-                onClick={() => setExpandedFaq(isOpen ? null : idx)}
-                className="w-full flex items-center justify-between font-bold text-slate-900 hover:text-blue-600 transition-colors text-right gap-2 text-xs sm:text-sm"
-              >
-                <span>{faq.q}</span>
-                {isOpen ? <ChevronUp className="w-4 h-4 text-slate-400 flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />}
-              </button>
-              {isOpen && (
-                <p className="text-slate-600 mt-2 text-xs leading-relaxed pr-2 font-medium">
-                  {faq.a}
-                </p>
-              )}
-            </div>
-          );
-        })}
+        {filteredFaqs.length === 0 ? (
+          <div className="py-8 text-center text-slate-400">
+            لا توجد نتائج مسجلة تطابق بحثك ({searchQuery}).
+          </div>
+        ) : (
+          filteredFaqs.map((faq, idx) => {
+            const isOpen = expandedFaq === idx;
+            return (
+              <div key={idx} className="py-3.5">
+                <button
+                  onClick={() => setExpandedFaq(isOpen ? null : idx)}
+                  className="w-full flex items-center justify-between font-bold text-slate-900 hover:text-blue-600 transition-colors text-right gap-2 text-xs sm:text-sm"
+                >
+                  <span>{faq.q}</span>
+                  {isOpen ? (
+                    <ChevronUp className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                  )}
+                </button>
+                {isOpen && (
+                  <p className="text-slate-600 mt-2 text-xs leading-relaxed pr-2 font-medium">
+                    {faq.a}
+                  </p>
+                )}
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );
