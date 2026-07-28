@@ -2,6 +2,11 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { taskService } from '../services/task.service.js';
 
+export const getAllTasks = asyncHandler(async (_req, res) => {
+  const tasks = await taskService.getAllGlobalTasks();
+  res.status(200).json(new ApiResponse(200, tasks, 'All tasks retrieved successfully'));
+});
+
 export const getTasks = asyncHandler(async (req, res) => {
   const projectId = req.params.projectId;
   const tasks = await taskService.getTasksByProject(projectId);

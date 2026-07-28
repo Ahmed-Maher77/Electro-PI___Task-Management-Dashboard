@@ -1,6 +1,11 @@
 import api from './axios';
 import type { ApiResponse, Task } from '../types';
 
+export const getAllTasksApi = async (): Promise<ApiResponse<Task[]>> => {
+  const response = await api.get<ApiResponse<Task[]>>('/tasks');
+  return response.data;
+};
+
 export const getTasksByProjectApi = async (projectId: string): Promise<ApiResponse<Task[]>> => {
   const response = await api.get<ApiResponse<Task[]>>(`/projects/${projectId}/tasks`);
   return response.data;

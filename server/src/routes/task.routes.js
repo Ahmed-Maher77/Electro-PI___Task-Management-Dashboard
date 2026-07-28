@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import {
+  getAllTasks,
   getTasks,
   createTask,
   updateTask,
@@ -22,6 +23,7 @@ taskRouter.use(authMiddleware);
 projectTaskRouter.get('/', getTasks);
 projectTaskRouter.post('/', createTaskValidator, validateMiddleware, createTask);
 
+taskRouter.get('/', getAllTasks);
 taskRouter.patch('/:id', updateTaskValidator, validateMiddleware, updateTask);
 taskRouter.delete('/:id', taskIdParamValidator, validateMiddleware, deleteTask);
 

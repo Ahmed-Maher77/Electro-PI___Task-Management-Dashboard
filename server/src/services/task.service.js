@@ -1,6 +1,11 @@
 import { Task } from '../models/Task.js';
 
 export class TaskService {
+  // Get all tasks across all projects
+  async getAllGlobalTasks() {
+    return await Task.find().sort({ createdAt: -1 });
+  }
+
   // Get tasks by project (and seed initial sample tasks matching screenshot if empty)
   async getTasksByProject(projectId) {
     let tasks = await Task.find({ projectId }).sort({ createdAt: -1 });
