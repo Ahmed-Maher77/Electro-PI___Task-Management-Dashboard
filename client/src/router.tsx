@@ -13,6 +13,7 @@ import CreateTask from './pages/CreateTask';
 import Team from './pages/Team';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
+import Support from './pages/Support';
 import NotFound from './pages/NotFound';
 
 export const router = createBrowserRouter([
@@ -74,6 +75,10 @@ export const router = createBrowserRouter([
           {
             path: '/settings',
             element: <Settings />,
+          },
+          {
+            path: '/support',
+            element: <Support />,
           },
         ],
       },
