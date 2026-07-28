@@ -79,7 +79,7 @@ export const Sidebar: React.FC = () => {
       <div className="p-4 border-t border-slate-200 space-y-4">
         
         <button
-          onClick={() => navigate('/tasks')}
+          onClick={() => navigate('/tasks/new')}
           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-md transition-colors text-xs flex items-center justify-center gap-2"
         >
           <Plus className="w-4 h-4" />
