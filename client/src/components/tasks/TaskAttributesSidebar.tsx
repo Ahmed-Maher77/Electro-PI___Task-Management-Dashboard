@@ -1,5 +1,6 @@
-import React from 'react';
-import { User as UserIcon, Search, Calendar, UploadCloud, Edit2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { User as UserIcon, Calendar, UploadCloud, ChevronDown } from 'lucide-react';
+import { getAllUsersApi } from '../../api/auth.api';
 
 interface TaskAttributesSidebarProps {
   status: 'todo' | 'doing' | 'review' | 'done';
@@ -26,9 +27,31 @@ export const TaskAttributesSidebar: React.FC<TaskAttributesSidebarProps> = ({
   points,
   setPoints,
 }) => {
+  const [teamMembers, setTeamMembers] = useState<string[]>([
+    'سارة محمود',
+    'أحمد ماهر',
+    'محمد علي',
+    'مريم حسن',
+  ]);
+
+  useEffect(() => {
+    getAllUsersApi()
+      .then((res) => {
+        if (res.data && res.data.length > 0) {
+          const names = res.data.map((u: any) => u.name);
+          setTeamMembers(names);
+          if (!assignee && names.length > 0) {
+            setAssignee(names[0]);
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 select-none">
       <div className="bg-white border border-slate-200 rounded-md p-5 space-y-5 text-xs">
+        
         {/* Status Select */}
         <div className="space-y-1.5">
           <label className="block font-bold text-slate-800">الحالة</label>
@@ -106,14 +129,19 @@ export const TaskAttributesSidebar: React.FC<TaskAttributesSidebarProps> = ({
         <div className="space-y-1.5">
           <label className="block font-bold text-slate-800">المسند إليه</label>
           <div className="relative">
-            <input
-              type="text"
+            <select
               value={assignee}
               onChange={(e) => setAssignee(e.target.value)}
-              className="w-full bg-white border border-slate-300 rounded-md pr-9 pl-8 py-2 text-slate-800 focus:border-blue-600 focus:outline-none"
-            />
-            <UserIcon className="w-4 h-4 absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              className="w-full bg-white border border-slate-300 rounded-md pr-9 pl-4 py-2 text-slate-800 focus:border-blue-600 focus:outline-none appearance-none"
+            >
+              {teamMembers.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
+            <UserIcon className="w-4 h-4 absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <ChevronDown className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           </div>
         </div>
 
@@ -132,7 +160,7 @@ export const TaskAttributesSidebar: React.FC<TaskAttributesSidebarProps> = ({
         </div>
 
         {/* Sprint & Points */}
-        <div className="border-t border-slate-100 pt-4 space-y-2 text-slate-600">
+        <div className="border-t border-slate-100 pt-4 space-y-3 text-slate-600">
           <div className="flex justify-between items-center">
             <span>الدورة (Sprint)</span>
             <span className="font-semibold text-slate-800">Sprint 24 - Hydra</span>
@@ -140,27 +168,32 @@ export const TaskAttributesSidebar: React.FC<TaskAttributesSidebarProps> = ({
 
           <div className="flex justify-between items-center">
             <span>النقاط (Points)</span>
-            <div className="flex items-center gap-1 font-semibold text-slate-800">
-              <span>{points}</span>
-              <button
-                type="button"
-                onClick={() => setPoints(points === 5 ? 8 : 5)}
-                className="p-1 text-slate-400 hover:text-slate-700"
-              >
-                <Edit2 className="w-3 h-3" />
-              </button>
-            </div>
+            <select
+              value={points}
+              onChange={(e) => setPoints(Number(e.target.value))}
+              className="bg-white border border-slate-300 rounded px-2 py-1 font-semibold text-slate-800 focus:border-blue-600 focus:outline-none"
+            >
+              <option value={1}>1 نقطة</option>
+              <option value={2}>2 نقاط</option>
+              <option value={3}>3 نقاط</option>
+              <option value={5}>5 نقاط</option>
+              <option value={8}>8 نقاط</option>
+              <option value={13}>13 نقطة</option>
+            </select>
           </div>
         </div>
       </div>
 
-      {/* Upload Dropzone */}
-      <div className="bg-white border border-dashed border-slate-300 rounded-md p-6 text-center space-y-2 cursor-pointer hover:bg-slate-50/50 transition-colors">
-        <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 mx-auto flex items-center justify-center">
+      {/* Upload Dropzone (Disabled Feature) */}
+      <div
+        className="bg-slate-50 border border-dashed border-slate-300 rounded-md p-6 text-center space-y-2 cursor-not-allowed opacity-75"
+        title="خاصية رفع المرفقات غير متاحة حالياً"
+      >
+        <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-400 mx-auto flex items-center justify-center">
           <UploadCloud className="w-5 h-5" />
         </div>
-        <p className="text-xs font-bold text-slate-800">اسحب الملفات هنا أو انقر للرفع</p>
-        <p className="text-[11px] text-slate-400">الحد الأقصى لحجم الملف 10 ميجابايت</p>
+        <p className="text-xs font-bold text-slate-600">خاصية رفع المرفقات غير متاحة حالياً</p>
+        <p className="text-[11px] text-slate-400">سيتم تفعيل رفع المستندات في التحديث القادم</p>
       </div>
     </div>
   );

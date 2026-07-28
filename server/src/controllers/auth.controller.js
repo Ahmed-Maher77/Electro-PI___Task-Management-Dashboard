@@ -48,6 +48,12 @@ export const getAllUsers = asyncHandler(async (_req, res) => {
   res.status(200).json(new ApiResponse(200, users, 'تم جلب قائمة الفريق بنجاح'));
 });
 
+// Delete User Controller
+export const deleteUser = asyncHandler(async (req, res) => {
+  await authService.deleteUser(req.params.id);
+  res.status(200).json(new ApiResponse(200, null, 'تم إزالة العضو من الفريق بنجاح'));
+});
+
 // Logout Controller
 export const logout = asyncHandler(async (_req, res) => {
   res.clearCookie('token', cookieOptions);

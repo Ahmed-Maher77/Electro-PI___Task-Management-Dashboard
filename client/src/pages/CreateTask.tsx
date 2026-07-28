@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bold, Italic, List, Code } from 'lucide-react';
 import { getProjectsApi } from '../api/projects.api';
 import { createTaskApi } from '../api/tasks.api';
 import type { Project } from '../types';
@@ -69,7 +68,7 @@ export const CreateTask: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto text-right">
+    <div className="space-y-6 max-w-6xl mx-auto text-right select-none">
       <div className="space-y-1">
         <h1 className="text-2xl font-bold text-slate-900">إنشاء مهمة جديدة</h1>
         <p className="text-xs text-slate-500 font-medium">
@@ -114,24 +113,7 @@ export const CreateTask: React.FC = () => {
             </div>
 
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label className="block text-xs font-bold text-slate-800">الوصف</label>
-                <div className="flex items-center gap-1 text-slate-500 border border-slate-200 rounded p-0.5 bg-slate-50">
-                  <button type="button" className="p-1 hover:text-slate-900 rounded hover:bg-slate-200">
-                    <Bold className="w-3.5 h-3.5" />
-                  </button>
-                  <button type="button" className="p-1 hover:text-slate-900 rounded hover:bg-slate-200">
-                    <Italic className="w-3.5 h-3.5" />
-                  </button>
-                  <button type="button" className="p-1 hover:text-slate-900 rounded hover:bg-slate-200">
-                    <List className="w-3.5 h-3.5" />
-                  </button>
-                  <button type="button" className="p-1 hover:text-slate-900 rounded hover:bg-slate-200">
-                    <Code className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-
+              <label className="block text-xs font-bold text-slate-800">الوصف</label>
               <textarea
                 rows={6}
                 placeholder="أضف التفاصيل، معايير القبول، أو السياق العام للمهمة..."

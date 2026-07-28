@@ -12,13 +12,13 @@ class AuthService {
   }
 
   // Register a new user
-  async registerUser({ name, email, password }) {
+  async registerUser({ name, email, password, role }) {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       throw new ApiError(400, 'البريد الإلكتروني مسجل بالفعل');
     }
 
-    const user = await User.create({ name, email, password });
+    const user = await User.create({ name, email, password, role: role || 'member' });
     const token = this.generateToken(user._id, user.role);
 
     return {
@@ -117,14 +117,14 @@ class AuthService {
   // Get All Team Members / Users
   async getAllUsers() {
     let users = await User.find().select('-password');
-    
-    // Seed initial team members if only 1 user exists
-    if (users.length <= 1) {
+
+    // Seed initial team members ONLY if database has 0 users
+    if (users.length === 0) {
       const seedUsers = [
-        { name: 'سارة تشن (Sarah Chen)', email: 'sarah.chen@electro-pi.com', role: 'admin' },
-        { name: 'ماركوس ثورن (Marcus Thorne)', email: 'marcus.thorne@electro-pi.com', role: 'member' },
-        { name: 'ديفيد كيم (David Kim)', email: 'david.kim@electro-pi.com', role: 'member' },
-        { name: 'إيلينا فانس (Elena Vance)', email: 'elena.vance@electro-pi.com', role: 'member' },
+        { name: 'سارة محمود', email: 'sarah.mahmoud@electro-pi.com', role: 'admin' },
+        { name: 'أحمد ماهر', email: 'ahmed.maher@electro-pi.com', role: 'member' },
+        { name: 'محمد علي', email: 'mohamed.ali@electro-pi.com', role: 'member' },
+        { name: 'مريم حسن', email: 'maryam.hassan@electro-pi.com', role: 'member' },
       ];
       for (const u of seedUsers) {
         const exists = await User.findOne({ email: u.email });
@@ -143,6 +143,16 @@ class AuthService {
       department: u.role === 'admin' ? 'البنية التحتية' : 'تطوير البرمجيات',
       status: 'active',
     }));
+  }
+
+  // Delete User Permanent
+  async deleteUser(userId) {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new ApiError(404, 'المستخدم غير موجود');
+    }
+    await User.findByIdAndDelete(userId);
+    return true;
   }
 }
 

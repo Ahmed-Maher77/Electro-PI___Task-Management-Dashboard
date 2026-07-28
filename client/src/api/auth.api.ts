@@ -31,6 +31,11 @@ export const getAllUsersApi = async (): Promise<ApiResponse<any[]>> => {
   return response.data;
 };
 
+export const deleteUserApi = async (id: string): Promise<ApiResponse<null>> => {
+  const response = await api.delete<ApiResponse<null>>(`/auth/users/${id}`);
+  return response.data;
+};
+
 export const logoutApi = async (): Promise<ApiResponse<null>> => {
   const response = await api.post<ApiResponse<null>>('/auth/logout');
   return response.data;

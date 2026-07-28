@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, ChevronRight, ChevronLeft, Check } from 'lucide-react';
-import { getAllUsersApi, registerApi } from '../api/auth.api';
+import { getAllUsersApi, registerApi, deleteUserApi } from '../api/auth.api';
 import type { TeamMember } from '../types';
 import { TeamHeader } from '../components/team/TeamHeader';
 import { TeamTable } from '../components/team/TeamTable';
@@ -114,18 +114,7 @@ export const Team: React.FC = () => {
         role: newMemberRole,
       });
 
-      const newMember: TeamMember = {
-        id: String(Date.now()),
-        name: newMemberName,
-        email: newMemberEmail,
-        role: newMemberRole === 'admin' ? 'قائد الفريق (Admin)' : 'عضو تطوير (Developer)',
-        roleBadge: newMemberRole === 'admin' ? 'text-blue-600' : 'text-emerald-700',
-        department: newMemberDept,
-        projectsCount: 1,
-        status: 'active',
-      };
-
-      setMembers([newMember, ...members]);
+      fetchMembers();
       setSuccessMsg(`تم إضافة العضو ${newMemberName} بنجاح وحفظه في قاعدة البيانات`);
       setTimeout(() => setSuccessMsg(''), 4000);
 
@@ -167,12 +156,19 @@ export const Team: React.FC = () => {
     setEditingMember(null);
   };
 
-  const handleDeleteMember = (id: string, memberName: string) => {
+  const handleDeleteMember = async (id: string, memberName: string) => {
     if (!confirm(`هل أنت تأكد من رغبتك في إزالة العضو (${memberName}) من الفريق؟`)) return;
-    setMembers(members.filter((m) => m.id !== id));
-    setActiveMenuId(null);
-    setSuccessMsg(`تمت إزالة العضو ${memberName} من القائمة`);
-    setTimeout(() => setSuccessMsg(''), 3000);
+    try {
+      if (id.length > 10) {
+        await deleteUserApi(id);
+      }
+      setMembers(members.filter((m) => m.id !== id));
+      setActiveMenuId(null);
+      setSuccessMsg(`تمت إزالة العضو ${memberName} بنجاح من قاعدة البيانات.`);
+      setTimeout(() => setSuccessMsg(''), 3000);
+    } catch (err: any) {
+      alert(err.message || 'فشل إزالة العضو من قاعدة البيانات');
+    }
   };
 
   // Filter members list
