@@ -74,7 +74,7 @@ export const TeamTable: React.FC<TeamTableProps> = ({
 
                 {/* Role Badge */}
                 <td className="py-4 px-5">
-                  <span className={`inline-block px-2.5 py-1 rounded text-[11px] font-bold border ${m.roleBadge}`}>
+                  <span className={`inline-block px-2.5 py-1 rounded text-[11px] font-bold ${m.roleBadge}`}>
                     {m.role}
                   </span>
                 </td>
@@ -89,11 +89,11 @@ export const TeamTable: React.FC<TeamTableProps> = ({
                   <span
                     className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold ${
                       m.status === 'active'
-                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                        : 'bg-amber-50 text-amber-700 border border-amber-200'
+                        ? 'text-emerald-700'
+                        : 'text-amber-700'
                     }`}
                   >
-                    {m.status === 'active' ? 'نشط (Active)' : 'دعوة معلقة'}
+                    {m.status === 'active' ? 'نشط' : 'دعوة معلقة'}
                   </span>
                 </td>
 

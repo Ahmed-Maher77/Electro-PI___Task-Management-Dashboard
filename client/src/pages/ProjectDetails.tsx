@@ -1,23 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import {
-  Info,
-  UserPlus,
-  Share2,
-  Edit,
-  Plus,
-  Filter,
-  SlidersHorizontal,
-  MoreVertical,
-  ChevronRight,
-  ChevronLeft,
-  User as UserIcon,
-} from 'lucide-react';
-import { getProjectByIdApi } from '../api/projects.api';
+import { getProjectByIdApi, updateProjectApi } from '../api/projects.api';
 import { getTasksByProjectApi, createTaskApi, deleteTaskApi, updateTaskApi } from '../api/tasks.api';
 import type { Project, Task } from '../types';
 import type { RootState } from '../store';
+import { ProjectDetailsHeader } from '../components/projects/ProjectDetailsHeader';
+import { ProjectOverviewCards } from '../components/projects/ProjectOverviewCards';
+import { ProjectTasksSection } from '../components/projects/ProjectTasksSection';
+import { Trash2 } from 'lucide-react';
 
 export const ProjectDetails: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -28,9 +19,12 @@ export const ProjectDetails: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Active Tab Filter
-  const [activeTab, setActiveTab] = useState<'all' | 'my-work' | 'completed'>('all');
-  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  // Contributor Team State
+  const [contributors, setContributors] = useState<Array<{ name: string; role: string }>>([
+    { name: 'سارة محمود', role: 'قائد الفريق' },
+    { name: 'أحمد ماهر', role: 'مطور تطبيقات' },
+    { name: 'محمد علي', role: 'مصمم واجهات' },
+  ]);
 
   // Modal State for New Task
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -40,6 +34,21 @@ export const ProjectDetails: React.FC = () => {
   const [newTaskStatus, setNewTaskStatus] = useState<'todo' | 'doing' | 'review' | 'done'>('doing');
   const [newTaskPriority, setNewTaskPriority] = useState<'low' | 'medium' | 'high'>('high');
   const [isSubmittingTask, setIsSubmittingTask] = useState(false);
+
+  // Modal State for Edit Project
+  const [isEditProjectModalOpen, setIsEditProjectModalOpen] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editSubtitle, setEditSubtitle] = useState('');
+  const [editDesc, setEditDesc] = useState('');
+  const [editStatus, setEditStatus] = useState<'in-progress' | 'critical' | 'on-hold' | 'completed'>('in-progress');
+  const [editProgress, setEditProgress] = useState<number>(50);
+  const [isSavingProject, setIsSavingProject] = useState(false);
+
+  // Modal State for Add Member & Manage Members
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+  const [isManageMembersModalOpen, setIsManageMembersModalOpen] = useState(false);
+  const [memberLeadName, setMemberLeadName] = useState('');
+  const [memberRole, setMemberRole] = useState('مطور برمجيات');
 
   // Load project & tasks data
   const fetchData = async () => {
@@ -52,6 +61,13 @@ export const ProjectDetails: React.FC = () => {
       ]);
       setProject(projRes.data);
       setTasks(tasksRes.data || []);
+      if (projRes.data) {
+        setEditTitle(projRes.data.title || '');
+        setEditSubtitle(projRes.data.subtitle || '');
+        setEditDesc(projRes.data.description || '');
+        setEditStatus(projRes.data.status || 'in-progress');
+        setEditProgress(projRes.data.progress || 50);
+      }
     } catch (err: any) {
       setError(err.message || 'فشل تحميل بيانات المشروع');
     } finally {
@@ -63,7 +79,7 @@ export const ProjectDetails: React.FC = () => {
     fetchData();
   }, [projectId]);
 
-  // Handle task status change by any user
+  // Handle task status change
   const handleTaskStatusChange = async (taskId: string, newStatus: Task['status']) => {
     try {
       await updateTaskApi(taskId, { status: newStatus });
@@ -74,7 +90,7 @@ export const ProjectDetails: React.FC = () => {
   };
 
   // Handle Edit Project Permission check
-  const handleEditProject = () => {
+  const handleEditProjectClick = () => {
     const isOwner = project?.ownerId && currentUser?.id && project.ownerId === currentUser.id;
     const isAdmin = currentUser?.role === 'admin';
 
@@ -82,7 +98,54 @@ export const ProjectDetails: React.FC = () => {
       alert('فقط منشئ المشروع يملك صلاحية تعديل أو حذف هذا المشروع.');
       return;
     }
-    alert('يمكنك تعديل بيانات المشروع الآن.');
+    setIsEditProjectModalOpen(true);
+  };
+
+  // Save edited project changes to MongoDB
+  const handleSaveProjectEdits = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!projectId || !editTitle) return;
+
+    try {
+      setIsSavingProject(true);
+      const res = await updateProjectApi(projectId, {
+        title: editTitle,
+        subtitle: editSubtitle,
+        description: editDesc,
+        status: editStatus,
+        progress: editProgress,
+      });
+
+      setProject(res.data);
+      setIsEditProjectModalOpen(false);
+    } catch (err: any) {
+      alert(err.message || 'فشل حفظ تعديلات المشروع');
+    } finally {
+      setIsSavingProject(false);
+    }
+  };
+
+  // Save new team member contributor
+  const handleAddContributor = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!projectId || !memberLeadName) return;
+
+    try {
+      const newMember = { name: memberLeadName, role: memberRole };
+      setContributors([...contributors, newMember]);
+      await updateProjectApi(projectId, { leadName: memberLeadName });
+      setIsAddMemberModalOpen(false);
+      setMemberLeadName('');
+    } catch (err: any) {
+      alert(err.message || 'فشل إضافة المساهم');
+    }
+  };
+
+  // Remove a contributor from project
+  const handleRemoveContributor = (nameToRemove: string) => {
+    if (confirm(`هل أنت تأكد من إزالة (${nameToRemove}) من فريق عمل المشروع؟`)) {
+      setContributors(contributors.filter((c) => c.name !== nameToRemove));
+    }
   };
 
   // Handle task creation
@@ -118,18 +181,10 @@ export const ProjectDetails: React.FC = () => {
     try {
       await deleteTaskApi(taskId);
       setTasks(tasks.filter((t) => (t._id || t.id) !== taskId));
-      setActiveMenuId(null);
     } catch (err: any) {
       alert(err.message || 'فشل حذف المهمة');
     }
   };
-
-  // Filter tasks based on active tab
-  const filteredTasks = tasks.filter((t) => {
-    if (activeTab === 'completed') return t.status === 'done';
-    if (activeTab === 'my-work') return t.assigneeName?.includes('أحمد') || t.assigneeName?.includes('سارة');
-    return true;
-  });
 
   if (loading) {
     return (
@@ -141,400 +196,125 @@ export const ProjectDetails: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto text-right select-none">
-      
       {error && (
         <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-xs rounded-md">
           {error}
         </div>
       )}
 
-      {/* Breadcrumbs & Header Actions */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-xs text-slate-500">
-            <Link to="/projects" className="hover:text-slate-800 transition-colors">
-              المشاريع
-            </Link>
-            <span>/</span>
-            <span className="text-slate-800 font-semibold">{project?.title}</span>
-          </div>
+      {/* Header */}
+      <ProjectDetailsHeader project={project} onEditProject={handleEditProjectClick} />
 
-          <div className="flex items-center gap-3 pt-1">
-            <h1 className="text-2xl font-bold text-slate-900 leading-tight">
-              {project?.title}
-            </h1>
-            <span className="px-2.5 py-0.5 rounded text-[11px] font-bold bg-blue-50 text-blue-600 border border-blue-200">
-              قيد التنفيذ
-            </span>
-          </div>
-        </div>
+      {/* Description & Team Cards */}
+      <ProjectOverviewCards
+        project={project}
+        onAddMemberClick={() => setIsAddMemberModalOpen(true)}
+        onManageMembersClick={() => setIsManageMembersModalOpen(true)}
+      />
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2">
-          <button className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-medium py-2 px-3.5 rounded-md transition-colors text-xs flex items-center gap-1.5">
-            <Share2 className="w-3.5 h-3.5" />
-            <span>مشاركة</span>
-          </button>
-          <button
-            onClick={handleEditProject}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors text-xs flex items-center gap-1.5"
-          >
-            <Edit className="w-3.5 h-3.5" />
-            <span>تعديل المشروع</span>
-          </button>
-        </div>
-      </div>
+      {/* Active Tasks Section */}
+      <ProjectTasksSection
+        tasks={tasks}
+        onTaskStatusChange={handleTaskStatusChange}
+        onDeleteTask={handleDeleteTask}
+        onCreateTask={handleCreateTask}
+        isTaskModalOpen={isTaskModalOpen}
+        setIsTaskModalOpen={setIsTaskModalOpen}
+        newTaskTitle={newTaskTitle}
+        setNewTaskTitle={setNewTaskTitle}
+        newTaskDesc={newTaskDesc}
+        setNewTaskDesc={setNewTaskDesc}
+        newTaskAssignee={newTaskAssignee}
+        setNewTaskAssignee={setNewTaskAssignee}
+        newTaskStatus={newTaskStatus}
+        setNewTaskStatus={setNewTaskStatus}
+        newTaskPriority={newTaskPriority}
+        setNewTaskPriority={setNewTaskPriority}
+        isSubmittingTask={isSubmittingTask}
+      />
 
-      {/* Row 1: Project Description & Team Members Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        
-        {/* Description Card (Spans 2 cols) */}
-        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-md p-6 space-y-6 flex flex-col justify-between">
-          <div className="space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider">وصف المشروع</h2>
-              <Info className="w-4 h-4 text-slate-400" />
-            </div>
-
-            <p className="text-xs text-slate-600 leading-relaxed font-medium">
-              {project?.description ||
-                'تطوير وتحديث شامل للمنصة والتأكد من دعم كافة الخصائص المتقدمة وإدارة المهام بسلاسة عالية مع مزامنة كاملة لقواعد البيانات.'}
-            </p>
-          </div>
-
-          {/* Meta Footer Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 border-t border-slate-100 pt-4 text-xs">
-            <div>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">تاريخ البدء</p>
-              <p className="font-bold text-slate-800 mt-1">12 أكتوبر 2024</p>
-            </div>
-            <div>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">تاريخ الاستحقاق</p>
-              <p className="font-bold text-slate-800 mt-1">{project?.dueDate || '28 يناير 2025'}</p>
-            </div>
-            <div>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">الأولوية</p>
-              <p className="font-bold text-red-600 mt-1">عالية</p>
-            </div>
-            <div>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">مالك المشروع</p>
-              <p className="font-bold text-blue-600 mt-1">{project?.leadName || 'أحمد ماهر'}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Team Members Card (Spans 1 col) */}
-        <div className="bg-white border border-slate-200 rounded-md p-6 space-y-4 flex flex-col justify-between">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider">أعضاء الفريق</h2>
-              <a href="#manage" onClick={(e) => e.preventDefault()} className="text-xs font-semibold text-blue-600 hover:underline">
-                إدارة
-              </a>
-            </div>
-
-            {/* Member List */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs">
-                  س
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-800">سارة محمود</p>
-                  <p className="text-[11px] text-slate-400">قائد الفريق</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs">
-                  أ
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-800">أحمد ماهر</p>
-                  <p className="text-[11px] text-slate-400">مطور تطبيقات</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs">
-                  م
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-800">محمد علي</p>
-                  <p className="text-[11px] text-slate-400">مصمم واجهات</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <button className="w-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-medium py-2 rounded-md transition-colors text-xs flex items-center justify-center gap-1.5">
-            <UserPlus className="w-3.5 h-3.5" />
-            <span>إضافة مساهم</span>
-          </button>
-        </div>
-
-      </div>
-
-      {/* Row 2: Active Tasks Section */}
-      <div className="space-y-4">
-        
-        {/* Section Header & Tabs Bar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-200 pb-2">
-          
-          <div className="flex items-center gap-6">
-            <h2 className="text-base font-bold text-slate-900">المهام النشطة</h2>
-            
-            <div className="flex items-center gap-4 text-xs font-medium">
-              <button
-                onClick={() => setActiveTab('all')}
-                className={`pb-2 transition-colors relative ${
-                  activeTab === 'all' ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                جميع المهام
-                {activeTab === 'all' && <span className="absolute bottom-0 right-0 left-0 h-0.5 bg-blue-600" />}
-              </button>
-
-              <button
-                onClick={() => setActiveTab('my-work')}
-                className={`pb-2 transition-colors relative ${
-                  activeTab === 'my-work' ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                مهامي
-                {activeTab === 'my-work' && <span className="absolute bottom-0 right-0 left-0 h-0.5 bg-blue-600" />}
-              </button>
-
-              <button
-                onClick={() => setActiveTab('completed')}
-                className={`pb-2 transition-colors relative ${
-                  activeTab === 'completed' ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                المكتملة
-                {activeTab === 'completed' && <span className="absolute bottom-0 right-0 left-0 h-0.5 bg-blue-600" />}
-              </button>
-            </div>
-          </div>
-
-          {/* Action Controls */}
-          <div className="flex items-center gap-2">
-            <button className="p-2 border border-slate-300 rounded-md bg-white text-slate-500 hover:text-slate-800 transition-colors">
-              <Filter className="w-3.5 h-3.5" />
-            </button>
-            <button className="p-2 border border-slate-300 rounded-md bg-white text-slate-500 hover:text-slate-800 transition-colors">
-              <SlidersHorizontal className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setIsTaskModalOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3.5 rounded-md transition-colors text-xs flex items-center gap-1.5"
-            >
-              <Plus className="w-4 h-4" />
-              <span>إنشاء مهمة</span>
-            </button>
-          </div>
-
-        </div>
-
-        {/* Tasks Data Table */}
-        <div className="bg-white border border-slate-200 rounded-md overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-right border-collapse text-xs">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[11px] font-bold">
-                  <th className="py-3.5 px-5">المعرف</th>
-                  <th className="py-3.5 px-5">عنوان المهمة</th>
-                  <th className="py-3.5 px-5">المسند إليه</th>
-                  <th className="py-3.5 px-5">تغيير الحالة</th>
-                  <th className="py-3.5 px-5">تاريخ الاستحقاق</th>
-                  <th className="py-3.5 px-5 text-center">الإجراءات</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredTasks.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-8 text-center text-slate-400">
-                      لا توجد مهام حالياً في هذه الفئة.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredTasks.map((t) => {
-                    const taskId = t._id || t.id || '';
-
-                    return (
-                      <tr key={taskId} className="hover:bg-slate-50/80 transition-colors">
-                        
-                        <td className="py-4 px-5 font-mono text-slate-400 font-semibold text-[11px]">
-                          {t.taskIdCode || "لا يوجد كود لهذه المهمة"}
-                        </td>
-
-                        <td className="py-4 px-5">
-                          <p className="font-bold text-slate-900 text-sm leading-snug">{t.title}</p>
-                          <p className="text-slate-400 text-[11px] mt-0.5">{t.description || 'لا يوجد وصف لهذه المهمة'}</p>
-                        </td>
-
-                        <td className="py-4 px-5">
-                          <div className="flex items-center gap-2">
-                            <div className="w-5 h-5 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-[9px]">
-                              {t.assigneeName ? t.assigneeName.charAt(0) : <UserIcon className="w-3 h-3" />}
-                            </div>
-                            <span className="font-medium text-slate-700">{t.assigneeName || 'غير مسند'}</span>
-                          </div>
-                        </td>
-
-                        {/* Interactive Task Status Selector */}
-                        <td className="py-4 px-5">
-                          <select
-                            value={t.status === 'in-progress' ? 'doing' : t.status}
-                            onChange={(e) => handleTaskStatusChange(taskId, e.target.value as Task['status'])}
-                            className="bg-white border border-slate-300 rounded px-2.5 py-1 text-[11px] font-bold text-slate-800 focus:border-blue-600 focus:outline-none cursor-pointer"
-                          >
-                            <option value="todo">قيد الانتظار</option>
-                            <option value="doing">قيد العمل</option>
-                            <option value="review">مراجعة</option>
-                            <option value="done">مكتملة</option>
-                          </select>
-                        </td>
-
-                        <td className="py-4 px-5 font-medium text-slate-600 whitespace-nowrap">
-                          {t.dueDate || 'لا يوجد تاريخ استحقاق'}
-                        </td>
-
-                        <td className="py-4 px-5 text-center relative">
-                          <button
-                            onClick={() => setActiveMenuId(activeMenuId === taskId ? null : taskId)}
-                            className="p-1 text-slate-400 hover:text-slate-700 rounded transition-colors"
-                          >
-                            <MoreVertical className="w-4 h-4" />
-                          </button>
-
-                          {activeMenuId === taskId && (
-                            <div className="absolute left-4 top-10 w-32 bg-white border border-slate-200 rounded-md z-20 py-1 text-right text-xs">
-                              <button
-                                onClick={() => handleDeleteTask(taskId)}
-                                className="w-full text-right px-3 py-1.5 hover:bg-red-50 text-red-600 font-medium"
-                              >
-                                حذف المهمة
-                              </button>
-                            </div>
-                          )}
-                        </td>
-
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="bg-slate-50/50 border-t border-slate-200 p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-            <p>
-              عرض <span className="font-semibold text-slate-800">{filteredTasks.length}</span> من أصل{' '}
-              <span className="font-semibold text-slate-800">{tasks.length}</span> عنصر
-            </p>
-
-            <div className="flex items-center gap-1 font-medium">
-              <button className="w-7 h-7 flex items-center justify-center border border-slate-200 bg-white rounded text-slate-600 hover:bg-slate-100">
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-              <button className="w-7 h-7 flex items-center justify-center bg-blue-600 text-white rounded font-bold">
-                1
-              </button>
-              <button className="w-7 h-7 flex items-center justify-center border border-slate-200 bg-white rounded text-slate-600 hover:bg-slate-100">
-                <ChevronLeft className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Create Task Modal Dialog */}
-      {isTaskModalOpen && (
+      {/* Modal: Edit Project */}
+      {isEditProjectModalOpen && (
         <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center z-50 p-4">
           <div className="bg-white border border-slate-200 rounded-md p-6 w-full max-w-md space-y-4">
             <h2 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3">
-              إنشاء مهمة جديدة
+              تعديل تفاصيل المشروع
             </h2>
 
-            <form onSubmit={handleCreateTask} className="space-y-3 text-xs">
+            <form onSubmit={handleSaveProjectEdits} className="space-y-3 text-xs">
               <div className="space-y-1">
-                <label className="block font-semibold text-slate-700">عنوان المهمة</label>
+                <label className="block font-semibold text-slate-700">عنوان المشروع</label>
                 <input
                   type="text"
                   required
-                  placeholder="مثال: إضافة بوابة الدفع الإلكتروني"
-                  value={newTaskTitle}
-                  onChange={(e) => setNewTaskTitle(e.target.value)}
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
                   className="w-full border border-slate-300 rounded-md p-2 focus:border-blue-600 focus:outline-none"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="block font-semibold text-slate-700">وصف المهمة</label>
+                <label className="block font-semibold text-slate-700">العنوان الفرعي</label>
+                <input
+                  type="text"
+                  value={editSubtitle}
+                  onChange={(e) => setEditSubtitle(e.target.value)}
+                  className="w-full border border-slate-300 rounded-md p-2 focus:border-blue-600 focus:outline-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block font-semibold text-slate-700">وصف المشروع</label>
                 <textarea
-                  rows={2}
-                  placeholder="تفاصيل وأهداف الإنجاز..."
-                  value={newTaskDesc}
-                  onChange={(e) => setNewTaskDesc(e.target.value)}
+                  rows={3}
+                  value={editDesc}
+                  onChange={(e) => setEditDesc(e.target.value)}
                   className="w-full border border-slate-300 rounded-md p-2 focus:border-blue-600 focus:outline-none resize-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="block font-semibold text-slate-700">المسند إليه</label>
-                  <input
-                    type="text"
-                    value={newTaskAssignee}
-                    onChange={(e) => setNewTaskAssignee(e.target.value)}
+                  <label className="block font-semibold text-slate-700">الحالة</label>
+                  <select
+                    value={editStatus}
+                    onChange={(e) => setEditStatus(e.target.value as any)}
                     className="w-full border border-slate-300 rounded-md p-2 focus:border-blue-600 focus:outline-none"
-                  />
+                  >
+                    <option value="in-progress">قيد التنفيذ</option>
+                    <option value="critical">حرج</option>
+                    <option value="on-hold">معلق</option>
+                    <option value="completed">مكتمل</option>
+                  </select>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block font-semibold text-slate-700">الحالة</label>
-                  <select
-                    value={newTaskStatus}
-                    onChange={(e) => setNewTaskStatus(e.target.value as any)}
+                  <label className="block font-semibold text-slate-700">نسبة الإنجاز (%)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={editProgress}
+                    onChange={(e) => setEditProgress(parseInt(e.target.value, 10) || 0)}
                     className="w-full border border-slate-300 rounded-md p-2 focus:border-blue-600 focus:outline-none"
-                  >
-                    <option value="doing">قيد العمل</option>
-                    <option value="review">مراجعة</option>
-                    <option value="todo">قيد الانتظار</option>
-                    <option value="done">مكتملة</option>
-                  </select>
+                  />
                 </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="block font-semibold text-slate-700">الأولوية</label>
-                <select
-                  value={newTaskPriority}
-                  onChange={(e) => setNewTaskPriority(e.target.value as any)}
-                  className="w-full border border-slate-300 rounded-md p-2 focus:border-blue-600 focus:outline-none"
-                >
-                  <option value="high">عالية</option>
-                  <option value="medium">متوسطة</option>
-                  <option value="low">منخفضة</option>
-                </select>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
                 <button
                   type="button"
-                  onClick={() => setIsTaskModalOpen(false)}
+                  onClick={() => setIsEditProjectModalOpen(false)}
                   className="px-4 py-2 border border-slate-300 rounded-md text-slate-600 hover:bg-slate-50 font-medium"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
-                  disabled={isSubmittingTask}
+                  disabled={isSavingProject}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium"
                 >
-                  {isSubmittingTask ? 'جاري الحفظ...' : 'حفظ المهمة'}
+                  {isSavingProject ? 'جاري الحفظ...' : 'حفظ التغيرات'}
                 </button>
               </div>
             </form>
@@ -542,6 +322,113 @@ export const ProjectDetails: React.FC = () => {
         </div>
       )}
 
+      {/* Modal: Manage Contributors */}
+      {isManageMembersModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-slate-200 rounded-md p-6 w-full max-w-md space-y-4 text-xs">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h2 className="text-base font-bold text-slate-900">إدارة مساهمي مشروع ({project?.title})</h2>
+              <button onClick={() => setIsManageMembersModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold">
+                ✕
+              </button>
+            </div>
+
+            <div className="divide-y divide-slate-100 space-y-2">
+              {contributors.map((c) => (
+                <div key={c.name} className="py-2.5 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs">
+                      {c.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-bold text-slate-800">{c.name}</p>
+                      <p className="text-[11px] text-slate-400">{c.role}</p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => handleRemoveContributor(c.name)}
+                    className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                    title="إزالة المساهم"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+              <button
+                onClick={() => {
+                  setIsManageMembersModalOpen(false);
+                  setIsAddMemberModalOpen(true);
+                }}
+                className="text-blue-600 hover:underline font-bold text-xs"
+              >
+                + إضافة مساهم جديد
+              </button>
+              <button
+                onClick={() => setIsManageMembersModalOpen(false)}
+                className="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md font-medium"
+              >
+                إغلاق
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Add Contributor */}
+      {isAddMemberModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-slate-200 rounded-md p-6 w-full max-w-sm space-y-4">
+            <h2 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3">
+              إضافة مساهم للمشروع
+            </h2>
+
+            <form onSubmit={handleAddContributor} className="space-y-3 text-xs">
+              <div className="space-y-1">
+                <label className="block font-semibold text-slate-700">اسم العضو / المساهم</label>
+                <input
+                  type="text"
+                  required
+                  value={memberLeadName}
+                  onChange={(e) => setMemberLeadName(e.target.value)}
+                  className="w-full border border-slate-300 rounded-md p-2 focus:border-blue-600 focus:outline-none"
+                  placeholder="مثال: يوسف أحمد"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block font-semibold text-slate-700">الدور الوظيفي</label>
+                <input
+                  type="text"
+                  value={memberRole}
+                  onChange={(e) => setMemberRole(e.target.value)}
+                  className="w-full border border-slate-300 rounded-md p-2 focus:border-blue-600 focus:outline-none"
+                  placeholder="مثال: مطور واجهات خلفية"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsAddMemberModalOpen(false)}
+                  className="px-4 py-2 border border-slate-300 rounded-md text-slate-600 hover:bg-slate-50 font-medium"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium"
+                >
+                  إضافة
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
