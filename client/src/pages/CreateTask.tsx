@@ -16,7 +16,7 @@ export const CreateTask: React.FC = () => {
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState<'todo' | 'doing' | 'review' | 'done'>('todo');
   const [priority, setPriority] = useState<'low' | 'medium' | 'high' | 'urgent'>('high');
-  const [assignee, setAssignee] = useState('سارة تشن');
+  const [assignee, setAssignee] = useState('سارة محمود');
   const [dueDate, setDueDate] = useState('2024-11-15');
   const [points, setPoints] = useState(5);
 
@@ -60,7 +60,7 @@ export const CreateTask: React.FC = () => {
         dueDate: dueDate || 'اليوم، 5:00 مساءً',
       });
 
-      navigate('/dashboard');
+      navigate('/tasks');
     } catch (err: any) {
       setError(err.message || 'فشل إنشاء المهمة، يرجى المحاولة مرة أخرى');
     } finally {
@@ -69,7 +69,7 @@ export const CreateTask: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto text-right ">
+    <div className="space-y-6 max-w-6xl mx-auto text-right">
       <div className="space-y-1">
         <h1 className="text-2xl font-bold text-slate-900">إنشاء مهمة جديدة</h1>
         <p className="text-xs text-slate-500 font-medium">
@@ -153,7 +153,7 @@ export const CreateTask: React.FC = () => {
 
             <button
               type="button"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate('/tasks')}
               className="px-5 py-2.5 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors"
             >
               إلغاء

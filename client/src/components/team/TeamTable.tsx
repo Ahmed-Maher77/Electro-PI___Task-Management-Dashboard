@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, MoreVertical } from 'lucide-react';
+import { Mail, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import type { TeamMember } from '../../types';
 import { Spinner } from '../Loader';
 
@@ -8,6 +8,7 @@ interface TeamTableProps {
   members: TeamMember[];
   activeMenuId: string | null;
   setActiveMenuId: (id: string | null) => void;
+  onEditMemberRole: (member: TeamMember) => void;
   onDeleteMember: (id: string, name: string) => void;
 }
 
@@ -16,6 +17,7 @@ export const TeamTable: React.FC<TeamTableProps> = ({
   members,
   activeMenuId,
   setActiveMenuId,
+  onEditMemberRole,
   onDeleteMember,
 }) => {
   if (isLoading) {
@@ -66,10 +68,10 @@ export const TeamTable: React.FC<TeamTableProps> = ({
 
                 {/* Email */}
                 <td className="py-4 px-5 text-slate-600 font-medium dir-ltr text-right">
-                  <div className="flex items-center justify-end gap-1.5">
+                  <a href={`mailto:${m.email}`} className="flex items-center justify-end gap-1.5 hover:text-blue-600">
                     <span>{m.email}</span>
                     <Mail className="w-3.5 h-3.5 text-slate-400" />
-                  </div>
+                  </a>
                 </td>
 
                 {/* Role Badge */}
@@ -107,21 +109,23 @@ export const TeamTable: React.FC<TeamTableProps> = ({
                   </button>
 
                   {activeMenuId === m.id && (
-                    <div className="absolute left-4 top-10 w-36 bg-white border border-slate-200 rounded-md z-20 py-1 text-right text-xs">
+                    <div className="absolute left-4 top-10 w-36 bg-white border border-slate-200 rounded-md z-20 py-1 text-right text-xs shadow-md">
                       <button
                         onClick={() => {
-                          alert(`تراسل مع: ${m.email}`);
                           setActiveMenuId(null);
+                          onEditMemberRole(m);
                         }}
-                        className="w-full text-right px-3 py-1.5 hover:bg-slate-50 text-slate-700"
+                        className="w-full text-right px-3 py-1.5 hover:bg-slate-50 text-slate-700 flex items-center gap-1.5"
                       >
-                        مراسلة العضو
+                        <Edit className="w-3.5 h-3.5" />
+                        <span>تعديل الدور</span>
                       </button>
                       <button
                         onClick={() => onDeleteMember(m.id, m.name)}
-                        className="w-full text-right px-3 py-1.5 hover:bg-red-50 text-red-600"
+                        className="w-full text-right px-3 py-1.5 hover:bg-red-50 text-red-600 flex items-center gap-1.5 font-medium"
                       >
-                        إزالة من الفريق
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>إزالة من الفريق</span>
                       </button>
                     </div>
                   )}

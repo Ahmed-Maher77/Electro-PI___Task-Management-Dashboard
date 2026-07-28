@@ -25,6 +25,11 @@ export const Team: React.FC = () => {
   const [newMemberDept, setNewMemberDept] = useState('تطوير البرمجيات');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Edit Member Modal State
+  const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const [editRoleTitle, setEditRoleTitle] = useState('');
+  const [editDepartment, setEditDepartment] = useState('');
+
   // Feedback State
   const [successMsg, setSuccessMsg] = useState('');
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
@@ -134,6 +139,34 @@ export const Team: React.FC = () => {
     }
   };
 
+  const handleOpenEditModal = (member: TeamMember) => {
+    setEditingMember(member);
+    setEditRoleTitle(member.role);
+    setEditDepartment(member.department);
+  };
+
+  const handleSaveMemberRole = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMember) return;
+
+    setMembers(
+      members.map((m) =>
+        m.id === editingMember.id
+          ? {
+              ...m,
+              role: editRoleTitle,
+              department: editDepartment,
+              roleBadge: editRoleTitle.includes('Admin') ? 'text-blue-600' : 'text-emerald-700',
+            }
+          : m
+      )
+    );
+
+    setSuccessMsg(`تم تحديث دور العضو (${editingMember.name}) بنجاح.`);
+    setTimeout(() => setSuccessMsg(''), 3000);
+    setEditingMember(null);
+  };
+
   const handleDeleteMember = (id: string, memberName: string) => {
     if (!confirm(`هل أنت تأكد من رغبتك في إزالة العضو (${memberName}) من الفريق؟`)) return;
     setMembers(members.filter((m) => m.id !== id));
@@ -159,7 +192,7 @@ export const Team: React.FC = () => {
   const paginatedMembers = filteredMembers.slice(startIndex, endIndex);
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto text-right">
+    <div className="space-y-6 max-w-7xl mx-auto text-right select-none">
       
       {/* Page Header */}
       <TeamHeader onOpenInviteModal={() => setIsModalOpen(true)} />
@@ -213,6 +246,7 @@ export const Team: React.FC = () => {
           members={paginatedMembers}
           activeMenuId={activeMenuId}
           setActiveMenuId={setActiveMenuId}
+          onEditMemberRole={handleOpenEditModal}
           onDeleteMember={handleDeleteMember}
         />
 
@@ -277,6 +311,57 @@ export const Team: React.FC = () => {
         setDepartment={setNewMemberDept}
         isSubmitting={isSubmitting}
       />
+
+      {/* Edit Role Modal */}
+      {editingMember && (
+        <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-slate-200 rounded-md p-6 w-full max-w-sm space-y-4">
+            <h2 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3">
+              تعديل دور العضو ({editingMember.name})
+            </h2>
+
+            <form onSubmit={handleSaveMemberRole} className="space-y-3 text-xs">
+              <div className="space-y-1">
+                <label className="block font-semibold text-slate-700">المسمى الوظيفي والدور</label>
+                <input
+                  type="text"
+                  required
+                  value={editRoleTitle}
+                  onChange={(e) => setEditRoleTitle(e.target.value)}
+                  className="w-full border border-slate-300 rounded-md p-2 focus:border-blue-600 focus:outline-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block font-semibold text-slate-700">القسم</label>
+                <input
+                  type="text"
+                  required
+                  value={editDepartment}
+                  onChange={(e) => setEditDepartment(e.target.value)}
+                  className="w-full border border-slate-300 rounded-md p-2 focus:border-blue-600 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setEditingMember(null)}
+                  className="px-4 py-2 border border-slate-300 rounded-md text-slate-600 hover:bg-slate-50 font-medium"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium"
+                >
+                  حفظ الدور
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   );

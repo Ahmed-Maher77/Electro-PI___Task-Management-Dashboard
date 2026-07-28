@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { FolderKanban, CheckCircle2, Clock } from 'lucide-react';
 import type { RootState } from '../store';
 import { getProjectsApi } from '../api/projects.api';
-import { getAllTasksApi } from '../api/tasks.api';
+import { getAllTasksApi, updateTaskApi } from '../api/tasks.api';
 import { getAllUsersApi } from '../api/auth.api';
 import type { Project, Task } from '../types';
 import { StatCards } from '../components/dashboard/StatCards';
@@ -20,19 +20,38 @@ export const Dashboard: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch real data from MongoDB API
-  useEffect(() => {
+  const fetchDashboardData = async () => {
     setIsLoading(true);
-    Promise.all([getProjectsApi(), getAllTasksApi(), getAllUsersApi()])
-      .then(([projRes, taskRes, usersRes]) => {
-        setProjects(projRes.data || []);
-        setTasks(taskRes.data || []);
-        if (usersRes.data && usersRes.data.length > 0) {
-          setTeamCount(usersRes.data.length);
-        }
-      })
-      .catch(() => {})
-      .finally(() => setIsLoading(false));
+    try {
+      const [projRes, taskRes, usersRes] = await Promise.all([
+        getProjectsApi(),
+        getAllTasksApi(),
+        getAllUsersApi(),
+      ]);
+      setProjects(projRes.data || []);
+      setTasks(taskRes.data || []);
+      if (usersRes.data && usersRes.data.length > 0) {
+        setTeamCount(usersRes.data.length);
+      }
+    } catch {
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardData();
   }, []);
+
+  // Handle direct task status change from dashboard
+  const handleTaskStatusChange = async (taskId: string, newStatus: Task['status']) => {
+    try {
+      await updateTaskApi(taskId, { status: newStatus });
+      setTasks(tasks.map((t) => ((t._id || t.id) === taskId ? { ...t, status: newStatus } : t)));
+    } catch (err: any) {
+      alert(err.message || 'فشل تحديث حالة المهمة');
+    }
+  };
 
   // Compute dynamic recent activity
   const activities: ActivityItem[] = [
@@ -104,6 +123,7 @@ export const Dashboard: React.FC = () => {
         <RecentTasksList
           isLoading={isLoading}
           tasks={myTasks}
+          onTaskStatusChange={handleTaskStatusChange}
         />
       </div>
 
