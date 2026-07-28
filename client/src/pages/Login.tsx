@@ -82,7 +82,7 @@ export const Login: React.FC = () => {
               className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
               {...register('rememberMe')}
             />
-            <label htmlFor="remember" className="text-xs text-slate-600 select-none cursor-pointer">
+            <label htmlFor="remember" className="text-xs text-slate-600  cursor-pointer">
               تذكرني
             </label>
           </div>

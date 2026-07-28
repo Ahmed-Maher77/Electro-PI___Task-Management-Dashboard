@@ -111,14 +111,14 @@ export const ProjectDetails: React.FC = () => {
     switch (status) {
       case 'doing':
       case 'in-progress':
-        return { label: 'قيد العمل', className: 'bg-blue-50 text-blue-600 border-blue-200' };
+        return { label: 'قيد العمل', className: 'text-blue-600' };
       case 'review':
-        return { label: 'مراجعة', className: 'bg-amber-50 text-amber-700 border-amber-200' };
+        return { label: 'مراجعة', className: 'text-amber-700' };
       case 'done':
-        return { label: 'مكتملة', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+        return { label: 'مكتملة', className: 'text-emerald-700' };
       case 'todo':
       default:
-        return { label: 'قيد الانتظار', className: 'bg-slate-100 text-slate-600 border-slate-200' };
+        return { label: 'قيد الانتظار', className: 'text-slate-600' };
     }
   };
 
@@ -131,7 +131,7 @@ export const ProjectDetails: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto text-right select-none">
+    <div className="space-y-6 max-w-7xl mx-auto text-right ">
       
       {error && (
         <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-xs rounded-md">
@@ -147,12 +147,12 @@ export const ProjectDetails: React.FC = () => {
               المشاريع
             </Link>
             <span>/</span>
-            <span className="text-slate-800 font-semibold">{project?.title || 'Cloud Migration v2'}</span>
+            <span className="text-slate-800 font-semibold">{project?.title}</span>
           </div>
 
           <div className="flex items-center gap-3 pt-1">
             <h1 className="text-2xl font-bold text-slate-900 leading-tight">
-              {project?.title || 'Cloud Migration v2'}
+              {project?.title}
             </h1>
             <span className="px-2.5 py-0.5 rounded text-[11px] font-bold bg-blue-50 text-blue-600 border border-blue-200">
               قيد التنفيذ
@@ -355,13 +355,13 @@ export const ProjectDetails: React.FC = () => {
                         
                         {/* ID Code */}
                         <td className="py-4 px-5 font-mono text-slate-400 font-semibold text-[11px]">
-                          {t.taskIdCode || 'TASK-1001'}
+                          {t.taskIdCode || "لا يوجد كود لهذه المهمة"}
                         </td>
 
                         {/* Title & Description */}
                         <td className="py-4 px-5">
                           <p className="font-bold text-slate-900 text-sm leading-snug">{t.title}</p>
-                          <p className="text-slate-400 text-[11px] mt-0.5">{t.description || 'تفاصيل وخطوات الإنجاز'}</p>
+                          <p className="text-slate-400 text-[11px] mt-0.5">{t.description || 'لا يوجد وصف لهذه المهمة'}</p>
                         </td>
 
                         {/* Assignee */}
@@ -383,7 +383,7 @@ export const ProjectDetails: React.FC = () => {
 
                         {/* Due Date */}
                         <td className="py-4 px-5 font-medium text-slate-600 whitespace-nowrap">
-                          {t.dueDate || 'اليوم، 5:00 مساءً'}
+                          {t.dueDate || 'لا يوجد تاريخ استحقاق'}
                         </td>
 
                         {/* Action Menu */}

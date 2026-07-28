@@ -20,7 +20,7 @@ export const ProtectedRoute: React.FC = () => {
   }, [dispatch, isLoading]);
 
   if (isLoading) {
-    return <Loader message="جاري التحقق من أمان الجلسة..." submessage="تطابق شهادات الاعتماد والوصول المؤسسي" />;
+    return <Loader message="جاري التحقق من أمان الجلسة..." />;
   }
 
   if (!isAuthenticated) {

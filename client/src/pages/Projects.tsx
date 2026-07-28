@@ -15,10 +15,13 @@ export const Projects: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [leadFilter, setLeadFilter] = useState('all');
 
+  // Real Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
   // Active row dropdown state
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
-  // Load Projects from API
   const fetchProjects = async () => {
     try {
       setLoading(true);
@@ -35,7 +38,6 @@ export const Projects: React.FC = () => {
     fetchProjects();
   }, []);
 
-  // Handle Project Deletion
   const handleDeleteProject = async (id: string) => {
     if (!confirm('هل أنت تأكد من رغبتك في حذف هذا المشروع؟')) return;
     try {
@@ -47,30 +49,47 @@ export const Projects: React.FC = () => {
     }
   };
 
-  // Filter projects list based on status and lead
+  // Filter projects list
   const filteredProjects = projects.filter((p) => {
     const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
     const matchesLead = leadFilter === 'all' || (p.leadName && p.leadName.includes(leadFilter));
     return matchesStatus && matchesLead;
   });
 
-  // Get localized status badge details
+  // Calculate real pagination slices
+  const totalItems = filteredProjects.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+  const paginatedProjects = filteredProjects.slice(startIndex, endIndex);
+
+  // Handle filter changes (reset page)
+  const handleStatusFilterChange = (val: string) => {
+    setStatusFilter(val);
+    setCurrentPage(1);
+  };
+
+  const handleLeadFilterChange = (val: string) => {
+    setLeadFilter(val);
+    setCurrentPage(1);
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'critical':
-        return { label: 'حرج', className: 'bg-red-50 text-red-600 border-red-200' };
+        return { label: 'حرج', className: 'text-red-600' };
       case 'on-hold':
-        return { label: 'معلق', className: 'bg-amber-50 text-amber-700 border-amber-200' };
+        return { label: 'معلق', className: 'text-amber-700' };
       case 'completed':
-        return { label: 'مكتمل', className: 'bg-blue-50 text-blue-600 border-blue-200' };
+        return { label: 'مكتمل', className: 'text-blue-600' };
       case 'in-progress':
       default:
-        return { label: 'قيد التنفيذ', className: 'bg-slate-100 text-blue-600 border-slate-200' };
+        return { label: 'قيد التنفيذ', className: 'text-blue-600' };
     }
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto text-right select-none">
+    <div className="space-y-6 max-w-7xl mx-auto text-right ">
       
       {/* Top Filter Bar & Create Action */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -81,7 +100,7 @@ export const Projects: React.FC = () => {
             <label className="block text-slate-500 font-medium">تصفية حسب الحالة</label>
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => handleStatusFilterChange(e.target.value)}
               className="bg-white border border-slate-300 rounded-md px-3 py-2 text-slate-800 focus:border-blue-600 focus:outline-none transition-colors"
             >
               <option value="all">جميع المشاريع</option>
@@ -96,15 +115,15 @@ export const Projects: React.FC = () => {
             <label className="block text-slate-500 font-medium">المسؤول</label>
             <select
               value={leadFilter}
-              onChange={(e) => setLeadFilter(e.target.value)}
+              onChange={(e) => handleLeadFilterChange(e.target.value)}
               className="bg-white border border-slate-300 rounded-md px-3 py-2 text-slate-800 focus:border-blue-600 focus:outline-none transition-colors"
             >
               <option value="all">جميع المسئولين</option>
-              <option value="إيلينا">إيلينا فانس</option>
-              <option value="ماركوس">ماركوس ثورن</option>
-              <option value="جوليان">جوليان درو</option>
-              <option value="سارة">سارة تشن</option>
-              <option value="أليكس">أليكس كومار</option>
+              <option value="سارة">سارة محمود</option>
+              <option value="أحمد">أحمد ماهر</option>
+              <option value="محمد">محمد علي</option>
+              <option value="مريم">مريم حسن</option>
+              <option value="عمر">عمر خالد</option>
             </select>
           </div>
         </div>
@@ -143,14 +162,14 @@ export const Projects: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filteredProjects.length === 0 ? (
+                {paginatedProjects.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="py-8 text-center text-slate-400">
                       لا توجد مشاريع مطابقة للفلاتر المحددة.
                     </td>
                   </tr>
                 ) : (
-                  filteredProjects.map((p) => {
+                  paginatedProjects.map((p) => {
                     const projectId = p._id || p.id || '';
                     const badge = getStatusBadge(p.status);
                     const isCritical = p.status === 'critical';
@@ -161,12 +180,12 @@ export const Projects: React.FC = () => {
                         {/* Project Name & Subtitle */}
                         <td className="py-4 px-5">
                           <p className="font-bold text-slate-900 text-sm leading-snug">{p.title}</p>
-                          <p className="text-slate-400 text-[11px] mt-0.5">{p.subtitle || 'Infrastructure Optimization'}</p>
+                          <p className="text-slate-400 text-[11px] mt-0.5">{p.subtitle || 'تطوير المنصة'}</p>
                         </td>
 
                         {/* Status Badge */}
                         <td className="py-4 px-5">
-                          <span className={`inline-block px-2.5 py-1 rounded text-[11px] font-bold border ${badge.className}`}>
+                          <span className={`inline-block px-2.5 py-1 rounded text-[11px] font-bold ${badge.className}`}>
                             {badge.label}
                           </span>
                         </td>
@@ -177,7 +196,7 @@ export const Projects: React.FC = () => {
                             <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-[10px]">
                               {p.leadName ? p.leadName.charAt(0) : <UserIcon className="w-3 h-3" />}
                             </div>
-                            <span className="font-medium text-slate-800">{p.leadName || 'أحمد محمود'}</span>
+                            <span className="font-medium text-slate-800">{p.leadName || 'أحمد ماهر'}</span>
                           </div>
                         </td>
 
@@ -208,7 +227,6 @@ export const Projects: React.FC = () => {
                             <MoreVertical className="w-4 h-4" />
                           </button>
 
-                          {/* Dropdown Menu */}
                           {activeMenuId === projectId && (
                             <div className="absolute left-4 top-10 w-36 bg-white border border-slate-200 rounded-md z-20 py-1 text-right text-xs">
                               <button
@@ -239,33 +257,48 @@ export const Projects: React.FC = () => {
           </div>
         )}
 
-        {/* Table Footer Pagination */}
+        {/* Real Dynamic Pagination Controls */}
         <div className="bg-slate-50/50 border-t border-slate-200 p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
           <p>
-            عرض <span className="font-semibold text-slate-800">1</span> إلى{' '}
-            <span className="font-semibold text-slate-800">{filteredProjects.length}</span> من أصل{' '}
-            <span className="font-semibold text-slate-800">{projects.length}</span> مشروعاً
+            عرض{' '}
+            <span className="font-semibold text-slate-800">
+              {totalItems === 0 ? 0 : startIndex + 1}
+            </span>{' '}
+            إلى{' '}
+            <span className="font-semibold text-slate-800">{endIndex}</span> من أصل{' '}
+            <span className="font-semibold text-slate-800">{totalItems}</span> مشروعاً
           </p>
 
-          {/* Pagination Controls */}
           <div className="flex items-center gap-1 font-medium">
-            <button className="w-7 h-7 flex items-center justify-center border border-slate-200 bg-white rounded text-slate-600 hover:bg-slate-100">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="w-7 h-7 flex items-center justify-center border border-slate-200 bg-white rounded text-slate-600 hover:bg-slate-100 disabled:opacity-40"
+              title="الصفحة السابقة"
+            >
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
-            <button className="w-7 h-7 flex items-center justify-center bg-blue-600 text-white rounded font-bold">
-              1
-            </button>
-            <button className="w-7 h-7 flex items-center justify-center border border-slate-200 bg-white rounded text-slate-600 hover:bg-slate-100">
-              2
-            </button>
-            <button className="w-7 h-7 flex items-center justify-center border border-slate-200 bg-white rounded text-slate-600 hover:bg-slate-100">
-              3
-            </button>
-            <span className="px-1 text-slate-400">...</span>
-            <button className="w-7 h-7 flex items-center justify-center border border-slate-200 bg-white rounded text-slate-600 hover:bg-slate-100">
-              5
-            </button>
-            <button className="w-7 h-7 flex items-center justify-center border border-slate-200 bg-white rounded text-slate-600 hover:bg-slate-100">
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`w-7 h-7 flex items-center justify-center rounded font-bold transition-colors ${
+                  currentPage === page
+                    ? 'bg-blue-600 text-white'
+                    : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages || totalPages === 0}
+              className="w-7 h-7 flex items-center justify-center border border-slate-200 bg-white rounded text-slate-600 hover:bg-slate-100 disabled:opacity-40"
+              title="الصفحة التالية"
+            >
               <ChevronLeft className="w-3.5 h-3.5" />
             </button>
           </div>

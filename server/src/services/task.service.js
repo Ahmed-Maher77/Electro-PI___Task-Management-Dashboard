@@ -1,12 +1,10 @@
 import { Task } from '../models/Task.js';
 
 export class TaskService {
-  // Get all tasks across all projects
   async getAllGlobalTasks() {
     return await Task.find().sort({ createdAt: -1 });
   }
 
-  // Get tasks by project (and seed initial sample tasks matching screenshot if empty)
   async getTasksByProject(projectId) {
     let tasks = await Task.find({ projectId }).sort({ createdAt: -1 });
 
@@ -14,9 +12,9 @@ export class TaskService {
       const sampleTasks = [
         {
           taskIdCode: 'TASK-1042',
-          title: 'تعيين أدوار IAM لبيئة الاختبار (Provision IAM roles for staging)',
-          description: 'ضمان الوصول المتبادل بين الحسابات لبيئة الاختبار والمراقبة',
-          assigneeName: 'سارة تشن (Sarah Chen)',
+          title: 'إضافة بوابة الدفع الإلكتروني',
+          description: 'ربط سداد بطاقات المدى والائتمان المباشر',
+          assigneeName: 'سارة محمود',
           status: 'doing',
           priority: 'high',
           dueDate: 'اليوم، 5:00 مساءً',
@@ -24,32 +22,32 @@ export class TaskService {
         },
         {
           taskIdCode: 'TASK-1045',
-          title: 'تحسين إعدادات موجه المرور (Optimize ingress controller configs)',
-          description: 'تحديث سياسة إنهاء التشفير TLS والمهل الزمنية للاتصالات الحية',
-          assigneeName: 'ماركوس ثورن (Marcus Thorne)',
+          title: 'تحسين تصميم القائمة الجانبية',
+          description: 'جعلها سلسة ومناسبة لجميع أحجام الشاشات',
+          assigneeName: 'أحمد ماهر',
           status: 'review',
           priority: 'medium',
-          dueDate: '28 أكتوبر 2023',
+          dueDate: '28 أكتوبر 2024',
           projectId,
         },
         {
           taskIdCode: 'TASK-1051',
-          title: 'التحقق من طبقة استمرارية البيانات (Data persistence layer verification)',
-          description: 'تشغيل اختبارات الأداء على الاستعادة التلقائية للتبديل RDS multi-AZ',
-          assigneeName: 'غير مسند',
+          title: 'إصلاح مشكلة تسجيل الدخول',
+          description: 'تحديث صلاحيات الجلسات وأمان الحسابات',
+          assigneeName: 'محمد علي',
           status: 'todo',
           priority: 'low',
-          dueDate: '02 نوفمبر 2023',
+          dueDate: '02 نوفمبر 2024',
           projectId,
         },
         {
           taskIdCode: 'TASK-1039',
-          title: 'تدقيق حجم حزمة الواجهة الأمامية (Frontend bundle size audit)',
-          description: 'تحليل الأجزاء غير المستخدمة وتحسين تقسيم الكود',
-          assigneeName: 'ديفيد كيم (David Kim)',
+          title: 'مراجعة وتقليل حجم الملفات',
+          description: 'تحسين أداء وسرعة تحميل الواجهة الأمامية',
+          assigneeName: 'مريم حسن',
           status: 'done',
           priority: 'medium',
-          dueDate: '19 أكتوبر 2023',
+          dueDate: '19 أكتوبر 2024',
           projectId,
         },
       ];
@@ -60,7 +58,6 @@ export class TaskService {
     return tasks;
   }
 
-  // Create new task
   async createTask(projectId, data) {
     const randomNum = Math.floor(1000 + Math.random() * 9000);
     const task = await Task.create({
@@ -71,12 +68,10 @@ export class TaskService {
     return task;
   }
 
-  // Update task
   async updateTask(taskId, data) {
     return await Task.findByIdAndUpdate(taskId, data, { new: true });
   }
 
-  // Delete task
   async deleteTask(taskId) {
     return await Task.findByIdAndDelete(taskId);
   }

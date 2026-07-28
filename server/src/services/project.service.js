@@ -1,53 +1,53 @@
 import { Project } from '../models/Project.js';
 
 export class ProjectService {
-  // Get all projects for current user (or seed initial projects matching screenshot if empty)
+  // Get all projects for current user
   async getAllProjects(userId) {
     let projects = await Project.find({ ownerId: userId }).sort({ createdAt: -1 });
 
     if (projects.length === 0) {
       const sampleProjects = [
         {
-          title: 'Alpha-Centauri Pipeline',
-          subtitle: 'Infrastructure Optimization',
+          title: 'تطبيق المتجر الإلكتروني',
+          subtitle: 'تطوير منصة البيع المباشر',
           status: 'in-progress',
-          leadName: 'إيلينا فانس (Elena Vance)',
+          leadName: 'سارة محمود',
           dueDate: '24 أكتوبر 2024',
           progress: 65,
           ownerId: userId,
         },
         {
-          title: 'Kernel Security Patch',
-          subtitle: 'Security Audit #402',
+          title: 'نظام إدارة المبيعات',
+          subtitle: 'متابعة الصفقات والعملاء',
           status: 'critical',
-          leadName: 'ماركوس ثورن (Marcus Thorne)',
+          leadName: 'أحمد ماهر',
           dueDate: '12 نوفمبر 2024',
           progress: 20,
           ownerId: userId,
         },
         {
-          title: 'Cloud Migrator v2',
-          subtitle: 'Data Pipeline Scalability',
+          title: 'تصميم لوحة التحكم',
+          subtitle: 'تحسين تجربة وواجهة المستخدم',
           status: 'on-hold',
-          leadName: 'جوليان درو (Julian Drue)',
+          leadName: 'محمد علي',
           dueDate: '01 ديسمبر 2024',
           progress: 45,
           ownerId: userId,
         },
         {
-          title: 'UI Refresh - Neptune',
-          subtitle: 'Design System Integration',
+          title: 'تطبيق الهواتف الذكية',
+          subtitle: 'تنسيق واجهات iOS وأندرويد',
           status: 'completed',
-          leadName: 'سارة تشن (Sarah Chen)',
+          leadName: 'مريم حسن',
           dueDate: '30 سبتمبر 2024',
           progress: 100,
           ownerId: userId,
         },
         {
-          title: 'Data Warehouse Expansion',
-          subtitle: 'Storage Scaling Phase 2',
+          title: 'تحديث البنية التحتية',
+          subtitle: 'تحسين سرعة استجابة الخوادم',
           status: 'in-progress',
-          leadName: 'أليكس كومار (Alex Kumar)',
+          leadName: 'عمر خالد',
           dueDate: '15 يناير 2025',
           progress: 12,
           ownerId: userId,
@@ -59,7 +59,6 @@ export class ProjectService {
     return projects;
   }
 
-  // Create new project
   async createProject(userId, data) {
     const project = await Project.create({
       ...data,
@@ -68,17 +67,14 @@ export class ProjectService {
     return project;
   }
 
-  // Get project by ID
   async getProjectById(projectId) {
     return await Project.findById(projectId);
   }
 
-  // Update project
   async updateProject(projectId, data) {
     return await Project.findByIdAndUpdate(projectId, data, { new: true });
   }
 
-  // Delete project
   async deleteProject(projectId) {
     return await Project.findByIdAndDelete(projectId);
   }

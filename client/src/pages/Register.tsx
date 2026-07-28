@@ -101,7 +101,7 @@ export const Register: React.FC = () => {
                 className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
                 {...register('agreeTerms')}
               />
-              <label htmlFor="terms" className="text-xs text-slate-600 select-none cursor-pointer">
+              <label htmlFor="terms" className="text-xs text-slate-600  cursor-pointer">
                 أوافق على{' '}
                 <a href="#terms" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">
                   شروط الخدمة

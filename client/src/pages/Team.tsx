@@ -75,7 +75,7 @@ export const Team: React.FC = () => {
   });
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto text-right select-none">
+    <div className="space-y-6 max-w-7xl mx-auto text-right ">
       
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

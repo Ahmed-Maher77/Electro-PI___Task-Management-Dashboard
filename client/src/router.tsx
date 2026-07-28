@@ -18,13 +18,12 @@ const Team = lazy(() => import('./pages/Team'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Settings = lazy(() => import('./pages/Settings'));
 const Support = lazy(() => import('./pages/Support'));
-const Docs = lazy(() => import('./pages/Docs'));
 const Status = lazy(() => import('./pages/Status'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Suspense Helper HOC
 const withSuspense = (Component: React.ComponentType) => (
-  <Suspense fallback={<Loader message="جاري تحميل الصفحة..." submessage="يرجى الانتظار لحين تجهيز المكونات" />}>
+  <Suspense fallback={<Loader message="جاري التحميل..." />}>
     <Component />
   </Suspense>
 );
@@ -92,10 +91,6 @@ export const router = createBrowserRouter([
           {
             path: '/support',
             element: withSuspense(Support),
-          },
-          {
-            path: '/docs',
-            element: withSuspense(Docs),
           },
           {
             path: '/status',

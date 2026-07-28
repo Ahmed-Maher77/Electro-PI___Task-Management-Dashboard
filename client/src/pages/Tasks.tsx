@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Filter, Trash2, CheckSquare } from 'lucide-react';
+import { Plus, Search, Filter, Trash2, CheckSquare, ChevronRight, ChevronLeft } from 'lucide-react';
 import { getAllTasksApi, deleteTaskApi } from '../api/tasks.api';
 import type { Task } from '../types';
 import { Spinner } from '../components/Loader';
@@ -16,7 +16,10 @@ export const Tasks: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
 
-  // Load all tasks from API
+  // Real Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
   const loadTasks = () => {
     setIsLoading(true);
     getAllTasksApi()
@@ -31,7 +34,6 @@ export const Tasks: React.FC = () => {
     loadTasks();
   }, []);
 
-  // Handle task deletion
   const handleDeleteTask = async (id: string) => {
     if (confirm('هل أنت تأكد من رغبتك في حذف هذه المهمة؟')) {
       try {
@@ -43,7 +45,6 @@ export const Tasks: React.FC = () => {
     }
   };
 
-  // Filter tasks list
   const filteredTasks = tasks.filter((t) => {
     const matchesSearch =
       t.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -52,6 +53,13 @@ export const Tasks: React.FC = () => {
     const matchesPriority = priorityFilter === 'all' || t.priority === priorityFilter;
     return matchesSearch && matchesStatus && matchesPriority;
   });
+
+  // Dynamic Pagination Slices
+  const totalItems = filteredTasks.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+  const paginatedTasks = filteredTasks.slice(startIndex, endIndex);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto text-right select-none">
@@ -84,7 +92,10 @@ export const Tasks: React.FC = () => {
             type="text"
             placeholder="بحث باسم المهمة أو المعرف..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full bg-white border border-slate-300 rounded-md pr-9 pl-4 py-2 text-slate-800 focus:border-blue-600 focus:outline-none"
           />
         </div>
@@ -97,7 +108,10 @@ export const Tasks: React.FC = () => {
             <span className="text-slate-500 font-medium">الحالة:</span>
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setCurrentPage(1);
+              }}
               className="bg-white border border-slate-300 rounded-md px-3 py-2 text-slate-800 focus:border-blue-600 focus:outline-none"
             >
               <option value="all">جميع الحالات</option>
@@ -112,7 +126,10 @@ export const Tasks: React.FC = () => {
             <span className="text-slate-500 font-medium">الأولوية:</span>
             <select
               value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value)}
+              onChange={(e) => {
+                setPriorityFilter(e.target.value);
+                setCurrentPage(1);
+              }}
               className="bg-white border border-slate-300 rounded-md px-3 py-2 text-slate-800 focus:border-blue-600 focus:outline-none"
             >
               <option value="all">جميع الأولويات</option>
@@ -138,7 +155,7 @@ export const Tasks: React.FC = () => {
             <table className="w-full text-right border-collapse text-xs">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[11px] font-bold">
-                  <th className="py-3.5 px-5">المعرف</th>
+                  <th className="py-3.5 px-5 min-w-[90px]">المعرف</th>
                   <th className="py-3.5 px-5">عنوان المهمة</th>
                   <th className="py-3.5 px-5">المسند إليه</th>
                   <th className="py-3.5 px-5">الأولوية</th>
@@ -148,7 +165,7 @@ export const Tasks: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filteredTasks.length === 0 ? (
+                {paginatedTasks.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="py-12 text-center text-slate-400 space-y-2">
                       <CheckSquare className="w-8 h-8 mx-auto text-slate-300" />
@@ -156,17 +173,15 @@ export const Tasks: React.FC = () => {
                     </td>
                   </tr>
                 ) : (
-                  filteredTasks.map((t) => {
+                  paginatedTasks.map((t) => {
                     const taskId = t._id || t.id || '';
                     return (
                       <tr key={taskId} className="hover:bg-slate-50/80 transition-colors">
                         
-                        {/* ID Code */}
-                        <td className="py-4 px-5 font-mono text-slate-500 text-[11px]">
+                        <td className="py-4 px-3 font-mono text-slate-500 text-[11px]">
                           {t.taskIdCode || 'TASK-100'}
                         </td>
 
-                        {/* Title & Description */}
                         <td className="py-4 px-5 max-w-xs">
                           <p className="font-bold text-slate-900 text-sm leading-snug truncate">{t.title}</p>
                           {t.description && (
@@ -174,7 +189,6 @@ export const Tasks: React.FC = () => {
                           )}
                         </td>
 
-                        {/* Assignee */}
                         <td className="py-4 px-5">
                           <div className="flex items-center gap-2">
                             <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-[10px]">
@@ -184,32 +198,30 @@ export const Tasks: React.FC = () => {
                           </div>
                         </td>
 
-                        {/* Priority */}
                         <td className="py-4 px-5">
                           <span
-                            className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold border ${
+                            className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold ${
                               t.priority === 'high'
-                                ? 'bg-red-50 text-red-600 border-red-200'
+                                ? 'text-red-600'
                                 : t.priority === 'medium'
-                                ? 'bg-blue-50 text-blue-600 border-blue-200'
-                                : 'bg-slate-100 text-slate-600 border-slate-200'
+                                ? 'text-blue-600'
+                                : 'text-slate-600'
                             }`}
                           >
                             {t.priority === 'high' ? 'عالية' : t.priority === 'medium' ? 'متوسطة' : 'منخفضة'}
                           </span>
                         </td>
 
-                        {/* Status */}
                         <td className="py-4 px-5">
                           <span
                             className={`inline-block px-2.5 py-1 rounded text-[11px] font-bold ${
                               t.status === 'doing'
-                                ? 'bg-blue-50 text-blue-600 border border-blue-200'
+                                ? 'text-blue-600'
                                 : t.status === 'review'
-                                ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                ? 'text-amber-700'
                                 : t.status === 'done'
-                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                : 'bg-slate-100 text-slate-600 border border-slate-200'
+                                ? 'text-emerald-700'
+                                : 'text-slate-600'
                             }`}
                           >
                             {t.status === 'doing'
@@ -222,12 +234,10 @@ export const Tasks: React.FC = () => {
                           </span>
                         </td>
 
-                        {/* Due Date */}
                         <td className="py-4 px-5 text-slate-500 font-medium">
                           {t.dueDate || 'غير محدد'}
                         </td>
 
-                        {/* Actions */}
                         <td className="py-4 px-5 text-center">
                           <button
                             onClick={() => handleDeleteTask(taskId)}
@@ -247,10 +257,51 @@ export const Tasks: React.FC = () => {
           </div>
         )}
 
-        {/* Footer */}
-        <div className="bg-slate-50/50 border-t border-slate-200 p-4 text-xs text-slate-500 flex items-center justify-between">
-          <span>إجمالي المهام: {tasks.length} مهمة</span>
-          <span>جميع البيانات محدثة تلقائياً عبر Mongoose</span>
+        {/* Real Dynamic Pagination Controls */}
+        <div className="bg-slate-50/50 border-t border-slate-200 p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+          <p>
+            عرض{' '}
+            <span className="font-semibold text-slate-800">
+              {totalItems === 0 ? 0 : startIndex + 1}
+            </span>{' '}
+            إلى{' '}
+            <span className="font-semibold text-slate-800">{endIndex}</span> من أصل{' '}
+            <span className="font-semibold text-slate-800">{totalItems}</span> مهمة
+          </p>
+
+          <div className="flex items-center gap-1 font-medium">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="w-7 h-7 flex items-center justify-center border border-slate-200 bg-white rounded text-slate-600 hover:bg-slate-100 disabled:opacity-40"
+              title="الصفحة السابقة"
+            >
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`w-7 h-7 flex items-center justify-center rounded font-bold transition-colors ${
+                  currentPage === page
+                    ? 'bg-blue-600 text-white'
+                    : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages || totalPages === 0}
+              className="w-7 h-7 flex items-center justify-center border border-slate-200 bg-white rounded text-slate-600 hover:bg-slate-100 disabled:opacity-40"
+              title="الصفحة التالية"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
       </div>
