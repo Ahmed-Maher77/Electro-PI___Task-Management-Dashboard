@@ -1,0 +1,6 @@
+# ElectroTask Robots.txt
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://eletro-pi-task-management-dashboard.vercel.app/sitemap.xml
