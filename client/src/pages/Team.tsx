@@ -188,7 +188,7 @@ export const Team: React.FC = () => {
   const paginatedMembers = filteredMembers.slice(startIndex, endIndex);
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto text-right select-none">
+    <div className="space-y-6 max-w-7xl mx-auto text-right ">
       
       {/* Page Header */}
       <TeamHeader onOpenInviteModal={() => setIsModalOpen(true)} />
