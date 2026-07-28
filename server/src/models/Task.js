@@ -2,18 +2,26 @@ import mongoose from 'mongoose';
 
 const taskSchema = new mongoose.Schema(
   {
+    taskIdCode: {
+      type: String,
+      default: 'TASK-1001',
+    },
     title: {
       type: String,
-      required: [true, 'Task title is required'],
+      required: [true, 'عنوان المهمة مطلوب'],
       trim: true,
     },
     description: {
       type: String,
       default: '',
     },
+    assigneeName: {
+      type: String,
+      default: 'غير مسند',
+    },
     status: {
       type: String,
-      enum: ['todo', 'in-progress', 'done'],
+      enum: ['todo', 'doing', 'review', 'done'],
       default: 'todo',
     },
     priority: {
@@ -26,12 +34,9 @@ const taskSchema = new mongoose.Schema(
       ref: 'Project',
       required: true,
     },
-    assignedTo: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
     dueDate: {
-      type: Date,
+      type: String,
+      default: 'اليوم، 5:00 مساءً',
     },
   },
   {

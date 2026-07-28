@@ -26,9 +26,11 @@ export interface Project {
 export interface Task {
   id?: string;
   _id?: string;
+  taskIdCode?: string;
   title: string;
   description?: string;
-  status: 'todo' | 'in-progress' | 'done';
+  assigneeName?: string;
+  status: 'todo' | 'doing' | 'review' | 'done' | 'in-progress';
   priority: 'low' | 'medium' | 'high';
   projectId: string;
   assignedTo?: string;
