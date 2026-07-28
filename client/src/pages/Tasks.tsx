@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Filter, Trash2, CheckSquare, ChevronRight, ChevronLeft } from 'lucide-react';
-import { getAllTasksApi, deleteTaskApi } from '../api/tasks.api';
+import { getAllTasksApi, deleteTaskApi, updateTaskApi } from '../api/tasks.api';
 import type { Task } from '../types';
 import { Spinner } from '../components/Loader';
 
@@ -33,6 +33,15 @@ export const Tasks: React.FC = () => {
   useEffect(() => {
     loadTasks();
   }, []);
+
+  const handleStatusChange = async (id: string, newStatus: Task['status']) => {
+    try {
+      await updateTaskApi(id, { status: newStatus });
+      setTasks(tasks.map((t) => ((t._id || t.id) === id ? { ...t, status: newStatus } : t)));
+    } catch (err: any) {
+      alert(err.message || 'فشل تحديث حالة المهمة');
+    }
+  };
 
   const handleDeleteTask = async (id: string) => {
     if (confirm('هل أنت تأكد من رغبتك في حذف هذه المهمة؟')) {
@@ -69,7 +78,7 @@ export const Tasks: React.FC = () => {
         <div className="space-y-1">
           <h1 className="text-2xl font-bold text-slate-900">جميع المهام</h1>
           <p className="text-xs text-slate-500 font-medium">
-            متابعة وتصفية كافة المهام عبر جميع المشاريع في مكان واحد.
+            متابعة وتغير حالات لكافة المهام عبر جميع المشاريع في مكان واحد.
           </p>
         </div>
 
@@ -159,7 +168,7 @@ export const Tasks: React.FC = () => {
                   <th className="py-3.5 px-5">عنوان المهمة</th>
                   <th className="py-3.5 px-5">المسند إليه</th>
                   <th className="py-3.5 px-5">الأولوية</th>
-                  <th className="py-3.5 px-5">الحالة</th>
+                  <th className="py-3.5 px-5">تغيير حالة المهمة</th>
                   <th className="py-3.5 px-5">تاريخ الاستحقاق</th>
                   <th className="py-3.5 px-5 text-center">الإجراءات</th>
                 </tr>
@@ -212,26 +221,18 @@ export const Tasks: React.FC = () => {
                           </span>
                         </td>
 
+                        {/* Interactive Task Status Selector */}
                         <td className="py-4 px-5">
-                          <span
-                            className={`inline-block px-2.5 py-1 rounded text-[11px] font-bold ${
-                              t.status === 'doing'
-                                ? 'text-blue-600'
-                                : t.status === 'review'
-                                ? 'text-amber-700'
-                                : t.status === 'done'
-                                ? 'text-emerald-700'
-                                : 'text-slate-600'
-                            }`}
+                          <select
+                            value={t.status === 'in-progress' ? 'doing' : t.status}
+                            onChange={(e) => handleStatusChange(taskId, e.target.value as Task['status'])}
+                            className="bg-white border border-slate-300 rounded px-2.5 py-1 text-[11px] font-bold text-slate-800 focus:border-blue-600 focus:outline-none cursor-pointer"
                           >
-                            {t.status === 'doing'
-                              ? 'قيد العمل'
-                              : t.status === 'review'
-                              ? 'مراجعة'
-                              : t.status === 'done'
-                              ? 'مكتملة'
-                              : 'قيد الانتظار'}
-                          </span>
+                            <option value="todo">قيد الانتظار</option>
+                            <option value="doing">قيد العمل</option>
+                            <option value="review">مراجعة</option>
+                            <option value="done">مكتملة</option>
+                          </select>
                         </td>
 
                         <td className="py-4 px-5 text-slate-500 font-medium">

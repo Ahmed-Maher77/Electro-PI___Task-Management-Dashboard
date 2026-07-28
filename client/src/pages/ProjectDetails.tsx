@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import {
   Info,
   UserPlus,
@@ -14,11 +15,13 @@ import {
   User as UserIcon,
 } from 'lucide-react';
 import { getProjectByIdApi } from '../api/projects.api';
-import { getTasksByProjectApi, createTaskApi, deleteTaskApi } from '../api/tasks.api';
+import { getTasksByProjectApi, createTaskApi, deleteTaskApi, updateTaskApi } from '../api/tasks.api';
 import type { Project, Task } from '../types';
+import type { RootState } from '../store';
 
 export const ProjectDetails: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
+  const currentUser = useSelector((state: RootState) => state.auth.user);
 
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -33,7 +36,7 @@ export const ProjectDetails: React.FC = () => {
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDesc, setNewTaskDesc] = useState('');
-  const [newTaskAssignee, setNewTaskAssignee] = useState('سارة تشن');
+  const [newTaskAssignee, setNewTaskAssignee] = useState('سارة محمود');
   const [newTaskStatus, setNewTaskStatus] = useState<'todo' | 'doing' | 'review' | 'done'>('doing');
   const [newTaskPriority, setNewTaskPriority] = useState<'low' | 'medium' | 'high'>('high');
   const [isSubmittingTask, setIsSubmittingTask] = useState(false);
@@ -59,6 +62,28 @@ export const ProjectDetails: React.FC = () => {
   useEffect(() => {
     fetchData();
   }, [projectId]);
+
+  // Handle task status change by any user
+  const handleTaskStatusChange = async (taskId: string, newStatus: Task['status']) => {
+    try {
+      await updateTaskApi(taskId, { status: newStatus });
+      setTasks(tasks.map((t) => ((t._id || t.id) === taskId ? { ...t, status: newStatus } : t)));
+    } catch (err: any) {
+      alert(err.message || 'فشل تحديث حالة المهمة');
+    }
+  };
+
+  // Handle Edit Project Permission check
+  const handleEditProject = () => {
+    const isOwner = project?.ownerId && currentUser?.id && project.ownerId === currentUser.id;
+    const isAdmin = currentUser?.role === 'admin';
+
+    if (project?.ownerId && !isOwner && !isAdmin) {
+      alert('فقط منشئ المشروع يملك صلاحية تعديل أو حذف هذا المشروع.');
+      return;
+    }
+    alert('يمكنك تعديل بيانات المشروع الآن.');
+  };
 
   // Handle task creation
   const handleCreateTask = async (e: React.FormEvent) => {
@@ -102,25 +127,9 @@ export const ProjectDetails: React.FC = () => {
   // Filter tasks based on active tab
   const filteredTasks = tasks.filter((t) => {
     if (activeTab === 'completed') return t.status === 'done';
-    if (activeTab === 'my-work') return t.assigneeName?.includes('سارة') || t.assigneeName?.includes('أليكس');
+    if (activeTab === 'my-work') return t.assigneeName?.includes('أحمد') || t.assigneeName?.includes('سارة');
     return true;
   });
-
-  // Get status badge styling for tasks
-  const getTaskStatusBadge = (status: string) => {
-    switch (status) {
-      case 'doing':
-      case 'in-progress':
-        return { label: 'قيد العمل', className: 'text-blue-600' };
-      case 'review':
-        return { label: 'مراجعة', className: 'text-amber-700' };
-      case 'done':
-        return { label: 'مكتملة', className: 'text-emerald-700' };
-      case 'todo':
-      default:
-        return { label: 'قيد الانتظار', className: 'text-slate-600' };
-    }
-  };
 
   if (loading) {
     return (
@@ -131,7 +140,7 @@ export const ProjectDetails: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto text-right ">
+    <div className="space-y-6 max-w-7xl mx-auto text-right select-none">
       
       {error && (
         <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-xs rounded-md">
@@ -166,7 +175,10 @@ export const ProjectDetails: React.FC = () => {
             <Share2 className="w-3.5 h-3.5" />
             <span>مشاركة</span>
           </button>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors text-xs flex items-center gap-1.5">
+          <button
+            onClick={handleEditProject}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors text-xs flex items-center gap-1.5"
+          >
             <Edit className="w-3.5 h-3.5" />
             <span>تعديل المشروع</span>
           </button>
@@ -186,7 +198,7 @@ export const ProjectDetails: React.FC = () => {
 
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
               {project?.description ||
-                'ترحيل شامل وقابل للتوسع للخدمات المصغرة القديمة إلى تجميعة Kubernetes الجديدة في منطقة US-East-1. تشمل هذه المبادرة تحويل 42 خدمة إلى حاويات، وإعداد مسارات التكامل والنشر المستمر التلقائية عبر GitHub Actions، وإنشاء لوحات مراقبة متكاملة باستخدام Prometheus و Grafana. تمنح الأولوية لبوابات الخدمة ذات الحركة العالية.'}
+                'تطوير وتحديث شامل للمنصة والتأكد من دعم كافة الخصائص المتقدمة وإدارة المهام بسلاسة عالية مع مزامنة كاملة لقواعد البيانات.'}
             </p>
           </div>
 
@@ -194,11 +206,11 @@ export const ProjectDetails: React.FC = () => {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 border-t border-slate-100 pt-4 text-xs">
             <div>
               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">تاريخ البدء</p>
-              <p className="font-bold text-slate-800 mt-1">12 أكتوبر 2023</p>
+              <p className="font-bold text-slate-800 mt-1">12 أكتوبر 2024</p>
             </div>
             <div>
               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">تاريخ الاستحقاق</p>
-              <p className="font-bold text-slate-800 mt-1">28 يناير 2024</p>
+              <p className="font-bold text-slate-800 mt-1">{project?.dueDate || '28 يناير 2025'}</p>
             </div>
             <div>
               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">الأولوية</p>
@@ -206,7 +218,7 @@ export const ProjectDetails: React.FC = () => {
             </div>
             <div>
               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">مالك المشروع</p>
-              <p className="font-bold text-blue-600 mt-1">أليكس ريفيرا</p>
+              <p className="font-bold text-blue-600 mt-1">{project?.leadName || 'أحمد ماهر'}</p>
             </div>
           </div>
         </div>
@@ -225,31 +237,31 @@ export const ProjectDetails: React.FC = () => {
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs">
-                  S
+                  س
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-800">سارة تشن (Sarah Chen)</p>
-                  <p className="text-[11px] text-slate-400">قائد DevOps</p>
+                  <p className="text-xs font-bold text-slate-800">سارة محمود</p>
+                  <p className="text-[11px] text-slate-400">قائد الفريق</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs">
-                  M
+                  أ
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-800">ماركوس ثورن (Marcus Thorne)</p>
-                  <p className="text-[11px] text-slate-400">أخصائي موثوقية الخوادم SRE</p>
+                  <p className="text-xs font-bold text-slate-800">أحمد ماهر</p>
+                  <p className="text-[11px] text-slate-400">مطور تطبيقات</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs">
-                  D
+                  م
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-800">ديفيد كيم (David Kim)</p>
-                  <p className="text-[11px] text-slate-400">مصمم المنتجات</p>
+                  <p className="text-xs font-bold text-slate-800">محمد علي</p>
+                  <p className="text-[11px] text-slate-400">مصمم واجهات</p>
                 </div>
               </div>
             </div>
@@ -331,9 +343,9 @@ export const ProjectDetails: React.FC = () => {
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[11px] font-bold">
                   <th className="py-3.5 px-5">المعرف</th>
-                  <th className="py-3.5 px-5">وصف المهمة</th>
+                  <th className="py-3.5 px-5">عنوان المهمة</th>
                   <th className="py-3.5 px-5">المسند إليه</th>
-                  <th className="py-3.5 px-5">الحالة</th>
+                  <th className="py-3.5 px-5">تغيير الحالة</th>
                   <th className="py-3.5 px-5">تاريخ الاستحقاق</th>
                   <th className="py-3.5 px-5 text-center">الإجراءات</th>
                 </tr>
@@ -348,23 +360,19 @@ export const ProjectDetails: React.FC = () => {
                 ) : (
                   filteredTasks.map((t) => {
                     const taskId = t._id || t.id || '';
-                    const badge = getTaskStatusBadge(t.status);
 
                     return (
                       <tr key={taskId} className="hover:bg-slate-50/80 transition-colors">
                         
-                        {/* ID Code */}
                         <td className="py-4 px-5 font-mono text-slate-400 font-semibold text-[11px]">
                           {t.taskIdCode || "لا يوجد كود لهذه المهمة"}
                         </td>
 
-                        {/* Title & Description */}
                         <td className="py-4 px-5">
                           <p className="font-bold text-slate-900 text-sm leading-snug">{t.title}</p>
                           <p className="text-slate-400 text-[11px] mt-0.5">{t.description || 'لا يوجد وصف لهذه المهمة'}</p>
                         </td>
 
-                        {/* Assignee */}
                         <td className="py-4 px-5">
                           <div className="flex items-center gap-2">
                             <div className="w-5 h-5 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-[9px]">
@@ -374,19 +382,24 @@ export const ProjectDetails: React.FC = () => {
                           </div>
                         </td>
 
-                        {/* Status Badge */}
+                        {/* Interactive Task Status Selector */}
                         <td className="py-4 px-5">
-                          <span className={`inline-block px-2.5 py-1 rounded text-[11px] font-bold border ${badge.className}`}>
-                            {badge.label}
-                          </span>
+                          <select
+                            value={t.status === 'in-progress' ? 'doing' : t.status}
+                            onChange={(e) => handleTaskStatusChange(taskId, e.target.value as Task['status'])}
+                            className="bg-white border border-slate-300 rounded px-2.5 py-1 text-[11px] font-bold text-slate-800 focus:border-blue-600 focus:outline-none cursor-pointer"
+                          >
+                            <option value="todo">قيد الانتظار</option>
+                            <option value="doing">قيد العمل</option>
+                            <option value="review">مراجعة</option>
+                            <option value="done">مكتملة</option>
+                          </select>
                         </td>
 
-                        {/* Due Date */}
                         <td className="py-4 px-5 font-medium text-slate-600 whitespace-nowrap">
                           {t.dueDate || 'لا يوجد تاريخ استحقاق'}
                         </td>
 
-                        {/* Action Menu */}
                         <td className="py-4 px-5 text-center relative">
                           <button
                             onClick={() => setActiveMenuId(activeMenuId === taskId ? null : taskId)}
@@ -415,7 +428,6 @@ export const ProjectDetails: React.FC = () => {
             </table>
           </div>
 
-          {/* Footer Pagination */}
           <div className="bg-slate-50/50 border-t border-slate-200 p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
             <p>
               عرض <span className="font-semibold text-slate-800">{filteredTasks.length}</span> من أصل{' '}
@@ -428,12 +440,6 @@ export const ProjectDetails: React.FC = () => {
               </button>
               <button className="w-7 h-7 flex items-center justify-center bg-blue-600 text-white rounded font-bold">
                 1
-              </button>
-              <button className="w-7 h-7 flex items-center justify-center border border-slate-200 bg-white rounded text-slate-600 hover:bg-slate-100">
-                2
-              </button>
-              <button className="w-7 h-7 flex items-center justify-center border border-slate-200 bg-white rounded text-slate-600 hover:bg-slate-100">
-                3
               </button>
               <button className="w-7 h-7 flex items-center justify-center border border-slate-200 bg-white rounded text-slate-600 hover:bg-slate-100">
                 <ChevronLeft className="w-3.5 h-3.5" />
@@ -458,7 +464,7 @@ export const ProjectDetails: React.FC = () => {
                 <input
                   type="text"
                   required
-                  placeholder="مثال: Provision IAM roles for staging"
+                  placeholder="مثال: إضافة بوابة الدفع الإلكتروني"
                   value={newTaskTitle}
                   onChange={(e) => setNewTaskTitle(e.target.value)}
                   className="w-full border border-slate-300 rounded-md p-2 focus:border-blue-600 focus:outline-none"

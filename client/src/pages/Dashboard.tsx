@@ -9,10 +9,12 @@ import {
   CheckCircle2,
   Clock,
   FolderKanban,
+  Users,
 } from 'lucide-react';
 import type { RootState } from '../store';
 import { getProjectsApi } from '../api/projects.api';
 import { getAllTasksApi } from '../api/tasks.api';
+import { getAllUsersApi } from '../api/auth.api';
 import type { Project, Task } from '../types';
 import { Spinner } from '../components/Loader';
 
@@ -23,15 +25,19 @@ export const Dashboard: React.FC = () => {
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [teamCount, setTeamCount] = useState<number>(4);
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch real data from MongoDB API
   useEffect(() => {
     setIsLoading(true);
-    Promise.all([getProjectsApi(), getAllTasksApi()])
-      .then(([projRes, taskRes]) => {
+    Promise.all([getProjectsApi(), getAllTasksApi(), getAllUsersApi()])
+      .then(([projRes, taskRes, usersRes]) => {
         setProjects(projRes.data || []);
         setTasks(taskRes.data || []);
+        if (usersRes.data && usersRes.data.length > 0) {
+          setTeamCount(usersRes.data.length);
+        }
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));
@@ -60,9 +66,12 @@ export const Dashboard: React.FC = () => {
   // Filter tasks assigned or high priority
   const myTasks = tasks.slice(0, 4);
   const pendingTasksCount = tasks.filter((t) => t.status !== 'done').length;
+  const completedTasksCount = tasks.filter((t) => t.status === 'done').length;
+  const highPriorityCount = tasks.filter((t) => t.priority === 'high').length;
+  const completionRate = tasks.length > 0 ? Math.round((completedTasksCount / tasks.length) * 100) : 0;
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto text-right ">
+    <div className="space-y-6 max-w-7xl mx-auto text-right">
       
       {/* Welcome Greeting */}
       <div className="space-y-1">
@@ -74,15 +83,18 @@ export const Dashboard: React.FC = () => {
         </p>
       </div>
 
-      {/* Row 1: Top Summary Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Row 1: Top Summary Stat Cards Grid (4 Cards) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
-        {/* Active Projects Card */}
+        {/* Card 1: Total Projects */}
         <div className="bg-white border border-slate-200 rounded-md p-5 flex items-center justify-between">
           <div className="space-y-1">
-            <p className="text-xs font-medium text-slate-500">إجمالي المشاريع في قاعدة البيانات</p>
-            <p className="text-3xl font-bold text-slate-900">
+            <p className="text-xs font-medium text-slate-500">إجمالي المشاريع</p>
+            <div className="text-2xl sm:text-3xl font-bold text-slate-900">
               {isLoading ? <Spinner size="sm" /> : projects.length}
+            </div>
+            <p className="text-[11px] font-semibold text-blue-600 pt-0.5">
+              مشاريع نشطة
             </p>
           </div>
           <div className="w-10 h-10 rounded bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
@@ -90,19 +102,51 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Pending Tasks Card */}
+        {/* Card 2: Pending Tasks */}
         <div className="bg-white border border-slate-200 rounded-md p-5 flex items-center justify-between">
           <div className="space-y-1">
-            <p className="text-xs font-medium text-slate-500">المهام المعلقة في النظام</p>
-            <p className="text-3xl font-bold text-slate-900">
+            <p className="text-xs font-medium text-slate-500">المهام المعلقة</p>
+            <div className="text-2xl sm:text-3xl font-bold text-slate-900">
               {isLoading ? <Spinner size="sm" /> : pendingTasksCount}
-            </p>
-            <p className="text-[11px] font-semibold text-amber-600 pt-1">
-              {tasks.filter((t) => t.priority === 'high').length} مهام عالية الأهمية
+            </div>
+            <p className="text-[11px] font-semibold text-amber-600 pt-0.5">
+              {highPriorityCount} عالية الأهمية
             </p>
           </div>
-          <div className="w-10 h-10 rounded bg-orange-50 text-orange-600 flex items-center justify-center font-bold">
+          <div className="w-10 h-10 rounded bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
             <ClipboardList className="w-5 h-5" />
+          </div>
+        </div>
+
+        {/* Card 3: Completed Tasks */}
+        <div className="bg-white border border-slate-200 rounded-md p-5 flex items-center justify-between">
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-slate-500">المهام المكتملة</p>
+            <div className="text-2xl sm:text-3xl font-bold text-slate-900">
+              {isLoading ? <Spinner size="sm" /> : completedTasksCount}
+            </div>
+            <p className="text-[11px] font-semibold text-emerald-600 pt-0.5">
+              {completionRate}% نسبة الإنجاز
+            </p>
+          </div>
+          <div className="w-10 h-10 rounded bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+            <CheckCircle2 className="w-5 h-5" />
+          </div>
+        </div>
+
+        {/* Card 4: Team Members */}
+        <div className="bg-white border border-slate-200 rounded-md p-5 flex items-center justify-between">
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-slate-500">أعضاء الفريق</p>
+            <div className="text-2xl sm:text-3xl font-bold text-slate-900">
+              {isLoading ? <Spinner size="sm" /> : teamCount}
+            </div>
+            <p className="text-[11px] font-semibold text-purple-600 pt-0.5">
+              فريق العمل المباشر
+            </p>
+          </div>
+          <div className="w-10 h-10 rounded bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+            <Users className="w-5 h-5" />
           </div>
         </div>
 

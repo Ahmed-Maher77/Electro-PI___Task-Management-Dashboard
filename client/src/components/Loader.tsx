@@ -6,7 +6,7 @@ interface LoaderProps {
 }
 
 /**
- * Simple Clean Spinner Component
+ * Simple Clean Spinner Component (using inline-block span to avoid DOM nesting issues)
  */
 export const Spinner: React.FC<{ size?: 'sm' | 'md' | 'lg'; className?: string }> = ({
   size = 'md',
@@ -19,7 +19,7 @@ export const Spinner: React.FC<{ size?: 'sm' | 'md' | 'lg'; className?: string }
   };
 
   return (
-    <div
+    <span
       className={`inline-block rounded-full border-blue-600 border-t-transparent animate-spin ${sizeClasses[size]} ${className}`}
       role="status"
     />
@@ -31,7 +31,7 @@ export const Spinner: React.FC<{ size?: 'sm' | 'md' | 'lg'; className?: string }
  */
 export const Loader: React.FC<LoaderProps> = ({ message = 'جاري التحميل...' }) => {
   return (
-    <div className="min-h-[300px] flex-1 flex flex-col items-center justify-center gap-3 p-6 text-center ">
+    <div className="min-h-[300px] flex-1 flex flex-col items-center justify-center gap-3 p-6 text-center">
       <Spinner size="lg" />
       <span className="text-xs font-semibold text-slate-600">{message}</span>
     </div>

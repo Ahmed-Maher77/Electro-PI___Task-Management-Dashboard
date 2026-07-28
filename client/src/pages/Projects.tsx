@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { Plus, MoreVertical, ChevronRight, ChevronLeft, User as UserIcon } from 'lucide-react';
 import { getProjectsApi, deleteProjectApi } from '../api/projects.api';
 import type { Project } from '../types';
+import type { RootState } from '../store';
 
 export const Projects: React.FC = () => {
   const navigate = useNavigate();
+  const currentUser = useSelector((state: RootState) => state.auth.user);
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,11 +41,24 @@ export const Projects: React.FC = () => {
     fetchProjects();
   }, []);
 
-  const handleDeleteProject = async (id: string) => {
-    if (!confirm('هل أنت تأكد من رغبتك في حذف هذا المشروع؟')) return;
+  // Enforce creator permissions on project deletion
+  const handleDeleteProject = async (p: Project) => {
+    const projectId = p._id || p.id || '';
+    
+    // Authorization check: only project creator or admin can edit/delete
+    const isOwner = p.ownerId && currentUser?.id && p.ownerId === currentUser.id;
+    const isAdmin = currentUser?.role === 'admin';
+
+    if (p.ownerId && !isOwner && !isAdmin) {
+      alert('فقط منشئ المشروع يملك صلاحية تعديل أو حذف هذا المشروع.');
+      setActiveMenuId(null);
+      return;
+    }
+
+    if (!confirm(`هل أنت تأكد من رغبتك في حذف المشروع (${p.title})؟`)) return;
     try {
-      await deleteProjectApi(id);
-      setProjects(projects.filter((p) => (p._id || p.id) !== id));
+      await deleteProjectApi(projectId);
+      setProjects(projects.filter((item) => (item._id || item.id) !== projectId));
       setActiveMenuId(null);
     } catch (err: any) {
       alert(err.message || 'فشل حذف المشروع');
@@ -89,7 +105,7 @@ export const Projects: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto text-right ">
+    <div className="space-y-6 max-w-7xl mx-auto text-right select-none">
       
       {/* Top Filter Bar & Create Action */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -239,8 +255,8 @@ export const Projects: React.FC = () => {
                                 عرض التفاصيل
                               </button>
                               <button
-                                onClick={() => handleDeleteProject(projectId)}
-                                className="w-full text-right px-3 py-1.5 hover:bg-red-50 text-red-600"
+                                onClick={() => handleDeleteProject(p)}
+                                className="w-full text-right px-3 py-1.5 hover:bg-red-50 text-red-600 font-medium"
                               >
                                 حذف المشروع
                               </button>

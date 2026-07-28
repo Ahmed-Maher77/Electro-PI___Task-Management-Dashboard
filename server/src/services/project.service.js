@@ -1,7 +1,6 @@
 import { Project } from '../models/Project.js';
 
 export class ProjectService {
-  // Get all projects for current user
   async getAllProjects(userId) {
     let projects = await Project.find({ ownerId: userId }).sort({ createdAt: -1 });
 
@@ -50,6 +49,24 @@ export class ProjectService {
           leadName: 'عمر خالد',
           dueDate: '15 يناير 2025',
           progress: 12,
+          ownerId: userId,
+        },
+        {
+          title: 'منصة الدعم الفني',
+          subtitle: 'نظام متابعة تذاكر خدمة العملاء',
+          status: 'in-progress',
+          leadName: 'سارة محمود',
+          dueDate: '05 فبراير 2025',
+          progress: 50,
+          ownerId: userId,
+        },
+        {
+          title: 'الموقع التعريفي الرسمي',
+          subtitle: 'إعادة إطلاق الواجهة الرئيسية للشركة',
+          status: 'completed',
+          leadName: 'أحمد ماهر',
+          dueDate: '10 أغسطس 2024',
+          progress: 100,
           ownerId: userId,
         },
       ];

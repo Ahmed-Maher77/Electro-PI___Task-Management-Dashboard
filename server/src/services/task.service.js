@@ -50,6 +50,26 @@ export class TaskService {
           dueDate: '19 أكتوبر 2024',
           projectId,
         },
+        {
+          taskIdCode: 'TASK-1060',
+          title: 'إعداد سجلات الأنشطة',
+          description: 'تتبع عمليات النظام وتحليل سجل الأداء',
+          assigneeName: 'عمر خالد',
+          status: 'doing',
+          priority: 'high',
+          dueDate: '05 نوفمبر 2024',
+          projectId,
+        },
+        {
+          taskIdCode: 'TASK-1065',
+          title: 'تأمين الاتصالات المشفرة',
+          description: 'تجديد شهادات الأمان SSL والتراخيص',
+          assigneeName: 'سارة محمود',
+          status: 'done',
+          priority: 'medium',
+          dueDate: '15 سبتمبر 2024',
+          projectId,
+        },
       ];
 
       tasks = await Task.insertMany(sampleTasks);
