@@ -3,7 +3,8 @@ export interface User {
   _id?: string;
   name: string;
   email: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | string;
+  department?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -37,6 +38,22 @@ export interface Task {
   dueDate?: string;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  roleBadge: string;
+  department: string;
+  projectsCount: number;
+  status: 'active' | 'pending';
+}
+
+export interface FaqItem {
+  q: string;
+  a: string;
 }
 
 export interface ApiResponse<T = any> {

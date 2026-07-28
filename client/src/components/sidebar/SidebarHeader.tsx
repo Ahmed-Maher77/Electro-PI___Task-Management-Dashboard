@@ -16,7 +16,7 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({
   setIsMobileOpen,
 }) => {
   return (
-    <div className="p-4 border-b border-slate-200 flex items-center justify-between">
+    <div className="p-4 py-3 border-b border-slate-200 flex items-center justify-between">
       <div className="flex items-center gap-3 overflow-hidden">
         <BrandLogo />
 
