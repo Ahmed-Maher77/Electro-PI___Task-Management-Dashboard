@@ -27,8 +27,8 @@ export const Team: React.FC = () => {
 
   // Edit Member Modal State
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
-  const [editRoleTitle, setEditRoleTitle] = useState('');
-  const [editDepartment, setEditDepartment] = useState('');
+  const [editRoleKey, setEditRoleKey] = useState('member');
+  const [editDepartment, setEditDepartment] = useState('تطوير البرمجيات');
 
   // Feedback State
   const [successMsg, setSuccessMsg] = useState('');
@@ -86,8 +86,8 @@ export const Team: React.FC = () => {
             id: '4',
             name: 'مريم حسن',
             email: 'maryam.hassan@electro-pi.com',
-            role: 'تصميم الواجهات (UI/UX)',
-            roleBadge: 'bg-amber-50 text-amber-700 border-amber-200',
+            role: 'عضو تطوير (Developer)',
+            roleBadge: 'text-emerald-700',
             department: 'التصميم والتجربة',
             projectsCount: 6,
             status: 'active',
@@ -130,22 +130,25 @@ export const Team: React.FC = () => {
 
   const handleOpenEditModal = (member: TeamMember) => {
     setEditingMember(member);
-    setEditRoleTitle(member.role);
-    setEditDepartment(member.department);
+    setEditRoleKey(member.role.includes('Admin') ? 'admin' : 'member');
+    setEditDepartment(member.department || 'تطوير البرمجيات');
   };
 
   const handleSaveMemberRole = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingMember) return;
 
+    const displayRole = editRoleKey === 'admin' ? 'قائد الفريق (Admin)' : 'عضو تطوير (Developer)';
+    const displayBadge = editRoleKey === 'admin' ? 'text-blue-600' : 'text-emerald-700';
+
     setMembers(
       members.map((m) =>
         m.id === editingMember.id
           ? {
               ...m,
-              role: editRoleTitle,
+              role: displayRole,
               department: editDepartment,
-              roleBadge: editRoleTitle.includes('Admin') ? 'text-blue-600' : 'text-emerald-700',
+              roleBadge: displayBadge,
             }
           : m
       )
@@ -188,7 +191,7 @@ export const Team: React.FC = () => {
   const paginatedMembers = filteredMembers.slice(startIndex, endIndex);
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto text-right ">
+    <div className="space-y-6 max-w-7xl mx-auto text-right">
       
       {/* Page Header */}
       <TeamHeader onOpenInviteModal={() => setIsModalOpen(true)} />
@@ -316,27 +319,33 @@ export const Team: React.FC = () => {
               تعديل دور العضو ({editingMember.name})
             </h2>
 
-            <form onSubmit={handleSaveMemberRole} className="space-y-3 text-xs">
-              <div className="space-y-1">
-                <label className="block font-semibold text-slate-700">المسمى الوظيفي والدور</label>
-                <input
-                  type="text"
-                  required
-                  value={editRoleTitle}
-                  onChange={(e) => setEditRoleTitle(e.target.value)}
-                  className="w-full border border-slate-300 rounded-md p-2 focus:border-blue-600 focus:outline-none"
-                />
+            <form onSubmit={handleSaveMemberRole} className="space-y-4 text-xs">
+              
+              {/* Role Select Dropdown */}
+              <div className="space-y-1.5">
+                <label className="block font-bold text-slate-700">الصلاحية (Role)</label>
+                <select
+                  value={editRoleKey}
+                  onChange={(e) => setEditRoleKey(e.target.value)}
+                  className="w-full bg-white border border-slate-300 rounded-md px-3 py-2 text-slate-800 focus:border-blue-600 focus:outline-none font-medium"
+                >
+                  <option value="member">عضو (Developer)</option>
+                  <option value="admin">مسؤول (Admin)</option>
+                </select>
               </div>
 
-              <div className="space-y-1">
-                <label className="block font-semibold text-slate-700">القسم</label>
-                <input
-                  type="text"
-                  required
+              {/* Department Select Dropdown */}
+              <div className="space-y-1.5">
+                <label className="block font-bold text-slate-700">القسم</label>
+                <select
                   value={editDepartment}
                   onChange={(e) => setEditDepartment(e.target.value)}
-                  className="w-full border border-slate-300 rounded-md p-2 focus:border-blue-600 focus:outline-none"
-                />
+                  className="w-full bg-white border border-slate-300 rounded-md px-3 py-2 text-slate-800 focus:border-blue-600 focus:outline-none font-medium"
+                >
+                  <option value="تطوير البرمجيات">تطوير البرمجيات</option>
+                  <option value="البنية التحتية">البنية التحتية</option>
+                  <option value="التصميم والتجربة">التصميم والتجربة</option>
+                </select>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
@@ -351,9 +360,10 @@ export const Team: React.FC = () => {
                   type="submit"
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium"
                 >
-                  حفظ الدور
+                  حفظ التعديلات
                 </button>
               </div>
+
             </form>
           </div>
         </div>
