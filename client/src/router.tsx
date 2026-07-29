@@ -4,22 +4,42 @@ import { ProtectedRoute } from './routes/ProtectedRoute';
 import { PublicRoute } from './routes/PublicRoute';
 import { DashboardLayout } from './components/DashboardLayout';
 import { Loader } from './components/Loader';
+import { GlobalErrorBoundary } from './components/GlobalErrorBoundary';
 
-// Lazy loaded page components
-const Login = lazy(() => import('./pages/Login'));
-const Register = lazy(() => import('./pages/Register'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const Projects = lazy(() => import('./pages/Projects'));
-const CreateProject = lazy(() => import('./pages/CreateProject'));
-const ProjectDetails = lazy(() => import('./pages/ProjectDetails'));
-const Tasks = lazy(() => import('./pages/Tasks'));
-const CreateTask = lazy(() => import('./pages/CreateTask'));
-const Team = lazy(() => import('./pages/Team'));
-const Profile = lazy(() => import('./pages/Profile'));
-const Settings = lazy(() => import('./pages/Settings'));
-const Support = lazy(() => import('./pages/Support'));
-const Status = lazy(() => import('./pages/Status'));
-const NotFound = lazy(() => import('./pages/NotFound'));
+// Resilient safeLazy HOC to automatically catch chunk load errors after new deployments
+const safeLazy = (importFn: () => Promise<any>) =>
+  lazy(async () => {
+    try {
+      const component = await importFn();
+      sessionStorage.removeItem('page_chunk_refreshed');
+      return component;
+    } catch (error: any) {
+      console.warn('Chunk import failed. Attempting page reload to fetch updated assets...', error);
+      const pageHasBeenRefreshed = sessionStorage.getItem('page_chunk_refreshed');
+      if (!pageHasBeenRefreshed) {
+        sessionStorage.setItem('page_chunk_refreshed', 'true');
+        window.location.reload();
+        return new Promise(() => {});
+      }
+      throw error;
+    }
+  });
+
+// Lazy loaded page components using safeLazy
+const Login = safeLazy(() => import('./pages/Login'));
+const Register = safeLazy(() => import('./pages/Register'));
+const Dashboard = safeLazy(() => import('./pages/Dashboard'));
+const Projects = safeLazy(() => import('./pages/Projects'));
+const CreateProject = safeLazy(() => import('./pages/CreateProject'));
+const ProjectDetails = safeLazy(() => import('./pages/ProjectDetails'));
+const Tasks = safeLazy(() => import('./pages/Tasks'));
+const CreateTask = safeLazy(() => import('./pages/CreateTask'));
+const Team = safeLazy(() => import('./pages/Team'));
+const Profile = safeLazy(() => import('./pages/Profile'));
+const Settings = safeLazy(() => import('./pages/Settings'));
+const Support = safeLazy(() => import('./pages/Support'));
+const Status = safeLazy(() => import('./pages/Status'));
+const NotFound = safeLazy(() => import('./pages/NotFound'));
 
 // Suspense Helper HOC
 const withSuspense = (Component: React.ComponentType) => (
@@ -32,9 +52,11 @@ export const router = createBrowserRouter([
   {
     path: '/',
     element: <Navigate to="/dashboard" replace />,
+    errorElement: <GlobalErrorBoundary />,
   },
   {
     element: <PublicRoute />,
+    errorElement: <GlobalErrorBoundary />,
     children: [
       {
         path: '/login',
@@ -48,9 +70,11 @@ export const router = createBrowserRouter([
   },
   {
     element: <ProtectedRoute />,
+    errorElement: <GlobalErrorBoundary />,
     children: [
       {
         element: <DashboardLayout />,
+        errorElement: <GlobalErrorBoundary />,
         children: [
           {
             path: '/dashboard',
@@ -103,5 +127,6 @@ export const router = createBrowserRouter([
   {
     path: '*',
     element: withSuspense(NotFound),
+    errorElement: <GlobalErrorBoundary />,
   },
 ]);
