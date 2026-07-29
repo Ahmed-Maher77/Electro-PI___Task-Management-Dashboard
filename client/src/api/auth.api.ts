@@ -3,11 +3,17 @@ import type { ApiResponse, AuthResponse, User } from '../types';
 
 export const registerApi = async (data: Record<string, any>): Promise<ApiResponse<AuthResponse>> => {
   const response = await api.post<ApiResponse<AuthResponse>>('/auth/register', data);
+  if (response.data?.data?.token) {
+    localStorage.setItem('auth_token', response.data.data.token);
+  }
   return response.data;
 };
 
 export const loginApi = async (credentials: Record<string, any>): Promise<ApiResponse<AuthResponse>> => {
   const response = await api.post<ApiResponse<AuthResponse>>('/auth/login', credentials);
+  if (response.data?.data?.token) {
+    localStorage.setItem('auth_token', response.data.data.token);
+  }
   return response.data;
 };
 
@@ -37,6 +43,10 @@ export const deleteUserApi = async (id: string): Promise<ApiResponse<null>> => {
 };
 
 export const logoutApi = async (): Promise<ApiResponse<null>> => {
-  const response = await api.post<ApiResponse<null>>('/auth/logout');
-  return response.data;
+  try {
+    const response = await api.post<ApiResponse<null>>('/auth/logout');
+    return response.data;
+  } finally {
+    localStorage.removeItem('auth_token');
+  }
 };

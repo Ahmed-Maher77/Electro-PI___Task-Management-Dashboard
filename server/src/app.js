@@ -12,9 +12,24 @@ import { connectDB } from './config/db.js';
 const app = express();
 
 app.use(helmet());
+
+// Dynamic CORS Configuration supporting localhost & production subdomains
+const allowedOrigins = [
+  env.CLIENT_URL,
+  'https://eletro-pi-task-management-dashboard.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+];
+
 app.use(
   cors({
-    origin: env.CLIENT_URL,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+        callback(null, true);
+      } else {
+        callback(null, true);
+      }
+    },
     credentials: true,
   })
 );

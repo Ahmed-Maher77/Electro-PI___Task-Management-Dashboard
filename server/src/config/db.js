@@ -2,11 +2,13 @@ import dns from 'node:dns';
 import mongoose from 'mongoose';
 import { env } from './env.js';
 
-// Configure Node.js to use Google & Cloudflare DNS for SRV record resolution
-try {
-  dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
-} catch (err) {
-  console.warn('Could not set custom DNS servers:', err.message);
+// Safe DNS server fallback for Node SRV record resolution (development/local only)
+if (process.env.NODE_ENV !== 'production') {
+  try {
+    dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
+  } catch (err) {
+    console.warn('DNS server override notice:', err.message);
+  }
 }
 
 // Cached connection for Serverless & Production environments
@@ -24,7 +26,7 @@ export const connectDB = async () => {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false, // Fail fast if DB disconnected instead of 10s buffering timeout
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 8000,
     };
 
     cached.promise = mongoose.connect(env.MONGO_URI, opts).then((m) => {
