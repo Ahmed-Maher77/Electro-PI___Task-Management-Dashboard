@@ -29,7 +29,9 @@ export const Settings: React.FC = () => {
     const [bio, setBio] = useState(
         "مهندس برمجيات شغوف بتطوير وتصميم الواجهات ولوحات التحكم المتقدمة.",
     );
-    const [avatarUrl, setAvatarUrl] = useState("");
+    const [avatarUrl, setAvatarUrl] = useState(
+        localStorage.getItem("user_avatar") || "",
+    );
 
     // Notifications Form States
     const [emailAlerts, setEmailAlerts] = useState(true);
@@ -52,11 +54,16 @@ export const Settings: React.FC = () => {
             setIsSaving(true);
             if (activeTab === "profile") {
                 const res = await updateProfileApi({ name, email });
+                if (avatarUrl) {
+                    localStorage.setItem("user_avatar", avatarUrl);
+                } else {
+                    localStorage.removeItem("user_avatar");
+                }
                 if (res.data) {
                     dispatch(setUser({ ...currentUser, ...res.data }));
                 }
                 setSavedMsg(
-                    "تم حفظ بيانات الملف الشخصي بنجاح في قاعدة البيانات وتحديث الجلسة",
+                    "تم حفظ بيانات الملف الشخصي بنجاح وتحديث الصورة الرمزية في الجلسة",
                 );
             } else if (activeTab === "notifications") {
                 setSavedMsg("تم حفظ تفضيلات الإشعارات والتنبيهات بنجاح");
@@ -72,7 +79,7 @@ export const Settings: React.FC = () => {
     };
 
     return (
-        <div className="space-y-6 max-w-4xl mx-auto text-right ">
+        <div className="space-y-6 max-w-4xl mx-auto text-right">
             {/* Page Header */}
             <div className="space-y-1">
                 <h1 className="text-2xl font-bold text-slate-900">
@@ -139,7 +146,7 @@ export const Settings: React.FC = () => {
                         <button
                             type="submit"
                             disabled={isSaving}
-                            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium py-2.5 px-6 rounded-md transition-colors text-xs flex items-center gap-2"
+                            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium py-2.5 px-6 rounded-md transition-colors text-xs flex items-center gap-2 cursor-pointer"
                         >
                             {isSaving ? (
                                 <Spinner size="sm" />

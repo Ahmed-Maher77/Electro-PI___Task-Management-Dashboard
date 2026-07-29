@@ -1,20 +1,6 @@
 import React, { useRef } from 'react';
 import { Camera, User as UserIcon, Trash2 } from 'lucide-react';
-
-interface UserProfileSettingsFormProps {
-  name: string;
-  setName: (val: string) => void;
-  email: string;
-  setEmail: (val: string) => void;
-  role: string;
-  setRole: (val: string) => void;
-  phone: string;
-  setPhone: (val: string) => void;
-  bio: string;
-  setBio: (val: string) => void;
-  avatarUrl: string;
-  setAvatarUrl: (val: string) => void;
-}
+import type { UserProfileSettingsFormProps } from '../../types';
 
 export const UserProfileSettingsForm: React.FC<UserProfileSettingsFormProps> = ({
   name,
@@ -32,11 +18,30 @@ export const UserProfileSettingsForm: React.FC<UserProfileSettingsFormProps> = (
 }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  // Convert uploaded image file to persistent Base64 Data URL
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      setAvatarUrl(url);
+      if (file.size > 5 * 1024 * 1024) {
+        alert('حجم الصورة كبير جداً، يرجى اختيار صورة أقل من 5 ميجابايت');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          setAvatarUrl(reader.result);
+          localStorage.setItem('user_avatar', reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveAvatar = () => {
+    setAvatarUrl('');
+    localStorage.removeItem('user_avatar');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -56,7 +61,7 @@ export const UserProfileSettingsForm: React.FC<UserProfileSettingsFormProps> = (
             <img
               src={avatarUrl}
               alt="Avatar"
-              className="w-20 h-20 rounded-full object-cover border-2 border-slate-300"
+              className="w-20 h-20 rounded-full object-cover border-2 border-slate-300 shadow-sm"
             />
           ) : (
             <div className="w-20 h-20 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-2xl border-2 border-slate-300">
@@ -66,7 +71,7 @@ export const UserProfileSettingsForm: React.FC<UserProfileSettingsFormProps> = (
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="absolute bottom-0 left-0 bg-slate-900 hover:bg-blue-600 text-white p-1.5 rounded-full border-2 border-white transition-colors"
+            className="absolute bottom-0 left-0 bg-slate-900 hover:bg-blue-600 text-white p-1.5 rounded-full border-2 border-white transition-colors cursor-pointer"
             title="تحديث الصورة"
           >
             <Camera className="w-3.5 h-3.5" />
@@ -89,15 +94,15 @@ export const UserProfileSettingsForm: React.FC<UserProfileSettingsFormProps> = (
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded-md font-semibold text-xs transition-colors"
+              className="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded-md font-semibold text-xs transition-colors cursor-pointer"
             >
               تحميل صورة جديدة
             </button>
             {avatarUrl && (
               <button
                 type="button"
-                onClick={() => setAvatarUrl('')}
-                className="text-red-600 hover:text-red-700 p-1.5 rounded hover:bg-red-50 transition-colors flex items-center gap-1"
+                onClick={handleRemoveAvatar}
+                className="text-red-600 hover:text-red-700 p-1.5 rounded hover:bg-red-50 transition-colors flex items-center gap-1 cursor-pointer font-medium"
                 title="إزالة الصورة"
               >
                 <Trash2 className="w-4 h-4" />

@@ -19,6 +19,8 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
 
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
+  const avatarUrl = localStorage.getItem('user_avatar') || user?.avatarUrl;
+
   // Load items for search
   useEffect(() => {
     Promise.all([getProjectsApi(), getAllTasksApi()])
@@ -188,7 +190,9 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
           className="flex items-center gap-2 border-r border-slate-200 pr-3 cursor-pointer"
         >
           <div className="w-8 h-8 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center text-slate-700 font-semibold text-xs overflow-hidden">
-            {user?.name ? (
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+            ) : user?.name ? (
               user.name.charAt(0).toUpperCase()
             ) : (
               <UserIcon className="w-4 h-4 text-slate-600" />

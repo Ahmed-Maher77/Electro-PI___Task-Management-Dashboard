@@ -11,6 +11,7 @@ export interface User {
   email: string;
   role: 'user' | 'admin' | string;
   department?: string;
+  avatarUrl?: string;
   createdAt?: string;
   updatedAt?: string;
 }
