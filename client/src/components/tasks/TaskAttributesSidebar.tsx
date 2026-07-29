@@ -167,7 +167,6 @@ export const TaskAttributesSidebar: React.FC<TaskAttributesSidebarProps> = ({
                             onChange={(e) => setDueDate(e.target.value)}
                             className="w-full bg-white border border-slate-300 rounded-md px-3 py-2 text-slate-800 focus:border-blue-600 focus:outline-none"
                         />
-                        <Calendar className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                     </div>
                 </div>
 

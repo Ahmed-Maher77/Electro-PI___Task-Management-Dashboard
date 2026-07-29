@@ -57,7 +57,7 @@ erDiagram
 
 ## 📄 Schemas Definition
 
-### 1. User Schema ([User.js](file:///c:/Users/Ahmed%20Maher/Downloads/eletro-pi___task-management-dashboard/server/src/models/User.js))
+### 1. User Schema ([User.js](../server/src/models/User.js))
 - `name`: String (Required, trimmed)
 - `email`: String (Required, unique, lowercase)
 - `password`: String (Required, bcrypt hashed)
@@ -66,7 +66,7 @@ erDiagram
 
 ---
 
-### 2. Project Schema ([Project.js](file:///c:/Users/Ahmed%20Maher/Downloads/eletro-pi___task-management-dashboard/server/src/models/Project.js))
+### 2. Project Schema ([Project.js](../server/src/models/Project.js))
 - `title`: String (Required)
 - `subtitle`: String
 - `description`: String
@@ -78,7 +78,7 @@ erDiagram
 
 ---
 
-### 3. Task Schema ([Task.js](file:///c:/Users/Ahmed%20Maher/Downloads/eletro-pi___task-management-dashboard/server/src/models/Task.js))
+### 3. Task Schema ([Task.js](../server/src/models/Task.js))
 - `taskIdCode`: String (Unique auto-generated, e.g. `EPI-1042`)
 - `title`: String (Required)
 - `description`: String

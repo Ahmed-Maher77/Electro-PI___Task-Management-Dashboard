@@ -4,10 +4,9 @@
 
 ---
 
-## 🌐 Live Preview & Demo
+## 🌐 Live Preview
 
-- 🌐 **Watch Live Demo:** [ElectroTask Live Deployment](https://eletro-pi-task-management-dashboard.vercel.app/)
-- 🎥 **Demo Video:** [Watch the Demo on LinkedIn](https://www.linkedin.com/in/ahmed-maher-software-engineer/)
+- 🌐 **Watch Live Demo:** [https://eletro-pi-task-management-dashboard.vercel.app](https://eletro-pi-task-management-dashboard.vercel.app/)
 
 ---
 
@@ -38,21 +37,9 @@
 
 ---
 
-## 📸 Website Preview
-
-```carousel
-![Dashboard Mockup](file:///C:/Users/Ahmed%20Maher/.gemini/antigravity-ide/brain/39877e6f-2ba5-46b7-a72f-fed35dd4e593/media__1785195020096.png)
-<!-- slide -->
-![Project Details Interface](file:///C:/Users/Ahmed%20Maher/.gemini/antigravity-ide/brain/39877e6f-2ba5-46b7-a72f-fed35dd4e593/media__1785189609656.png)
-<!-- slide -->
-![Projects Management View](file:///C:/Users/Ahmed%20Maher/.gemini/antigravity-ide/brain/39877e6f-2ba5-46b7-a72f-fed35dd4e593/media__1785188595037.png)
-```
-
----
-
 ## 📐 System Architecture & Program Flow
 
-Detailed architectural documentation, ERD diagrams, and UML program flow models are available in [docs/ARCHITECTURE.md](file:///c:/Users/Ahmed%20Maher/Downloads/eletro-pi___task-management-dashboard/docs/ARCHITECTURE.md).
+Detailed architectural documentation, ERD diagrams, and UML program flow models are available in [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md).
 
 ```mermaid
 graph TD
@@ -177,23 +164,22 @@ Electro-PI___Task-Management-Dashboard/
 
 The project utilizes three core Mongoose collections: **Users**, **Projects**, and **Tasks**. 
 
-For complete Mongoose schema specifications and Entity-Relationship Diagrams (ERD), consult [docs/DATABASE.md](file:///c:/Users/Ahmed%20Maher/Downloads/eletro-pi___task-management-dashboard/docs/DATABASE.md).
+For complete Mongoose schema specifications and Entity-Relationship Diagrams (ERD), consult [docs/DATABASE.md](./docs/DATABASE.md).
 
 ---
 
 ## 🔌 API Documentation
 
-Complete REST API endpoint specifications, payload examples, and HTTP response codes are documented in [docs/API.md](file:///c:/Users/Ahmed%20Maher/Downloads/eletro-pi___task-management-dashboard/docs/API.md).
+Complete REST API endpoint specifications, payload examples, and HTTP response codes are documented in [docs/API.md](./docs/API.md).
 
 ---
 
 ## 📬 Contact & Contribution
 
-- **Developer:** Ahmed Maher
 - **Portfolio:** [ahmedmaher-portfolio.vercel.app](https://ahmedmaher-portfolio.vercel.app)
-- **LinkedIn:** [linkedin.com/in/ahmed-maher-software-engineer](https://www.linkedin.com/in/ahmed-maher-software-engineer/)
+- **LinkedIn:** [linkedin.com/in/ahmed-maher-algohary/](https://www.linkedin.com/in/ahmed-maher-algohary/)
 - **GitHub:** [github.com/Ahmed-Maher77](https://github.com/Ahmed-Maher77)
-- **Email:** [ahmed.maher.dev@gmail.com](mailto:ahmed.maher.dev@gmail.com)
+- **Email:** [ahmedmaher.dev1@gmail.com](mailto:ahmedmaher.dev1@gmail.com)
 
 Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
 
