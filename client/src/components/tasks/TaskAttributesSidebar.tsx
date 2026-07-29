@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
     User as UserIcon,
-    Calendar,
     UploadCloud,
     ChevronDown,
 } from "lucide-react";
