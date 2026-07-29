@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trash2, CheckSquare, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Trash2, CheckSquare, ChevronRight, ChevronLeft, Edit } from 'lucide-react';
 import type { Task } from '../../types';
 import { Spinner } from '../Loader';
 
@@ -13,6 +13,7 @@ interface TasksTableProps {
   endIndex: number;
   onPageChange: (page: number) => void;
   onStatusChange: (id: string, status: Task['status']) => void;
+  onEditTask: (task: Task) => void;
   onDeleteTask: (id: string) => void;
 }
 
@@ -26,6 +27,7 @@ export const TasksTable: React.FC<TasksTableProps> = ({
   endIndex,
   onPageChange,
   onStatusChange,
+  onEditTask,
   onDeleteTask,
 }) => {
   return (
@@ -85,14 +87,14 @@ export const TasksTable: React.FC<TasksTableProps> = ({
                       <td className="py-4 px-5">
                         <span
                           className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold ${
-                            t.priority === 'high'
+                            t.priority === 'high' || t.priority === 'urgent'
                               ? 'text-red-600'
                               : t.priority === 'medium'
                               ? 'text-blue-600'
                               : 'text-slate-600'
                           }`}
                         >
-                          {t.priority === 'high' ? 'عالية' : t.priority === 'medium' ? 'متوسطة' : 'منخفضة'}
+                          {t.priority === 'high' || t.priority === 'urgent' ? 'عالية' : t.priority === 'medium' ? 'متوسطة' : 'منخفضة'}
                         </span>
                       </td>
 
@@ -115,13 +117,22 @@ export const TasksTable: React.FC<TasksTableProps> = ({
                       </td>
 
                       <td className="py-4 px-5 text-center">
-                        <button
-                          onClick={() => onDeleteTask(taskId)}
-                          className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                          title="حذف المهمة"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            onClick={() => onEditTask(t)}
+                            className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                            title="تعديل المهمة"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => onDeleteTask(taskId)}
+                            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                            title="حذف المهمة"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
