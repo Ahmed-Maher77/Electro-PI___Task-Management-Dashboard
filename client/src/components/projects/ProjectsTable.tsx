@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MoreVertical, ChevronRight, ChevronLeft, User as UserIcon } from 'lucide-react';
+import { MoreVertical, ChevronRight, ChevronLeft, User as UserIcon, Edit, Trash2 } from 'lucide-react';
 import type { Project } from '../../types';
 
 interface ProjectsTableProps {
@@ -13,6 +13,7 @@ interface ProjectsTableProps {
   startIndex: number;
   endIndex: number;
   onPageChange: (page: number) => void;
+  onEditProject?: (p: Project) => void;
   onDeleteProject: (p: Project) => void;
 }
 
@@ -26,6 +27,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
   startIndex,
   endIndex,
   onPageChange,
+  onEditProject,
   onDeleteProject,
 }) => {
   const navigate = useNavigate();
@@ -145,20 +147,26 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                             <button
                               onClick={() => {
                                 setActiveMenuId(null);
-                                navigate(`/projects/${projectId}`);
+                                if (onEditProject) {
+                                  onEditProject(p);
+                                } else {
+                                  navigate(`/projects/${projectId}`);
+                                }
                               }}
-                              className="w-full text-right px-3 py-1.5 hover:bg-slate-50 text-slate-700"
+                              className="w-full text-right px-3 py-1.5 hover:bg-slate-50 text-slate-700 flex items-center gap-1.5"
                             >
-                              عرض التفاصيل
+                              <Edit className="w-3.5 h-3.5" />
+                              <span>تعديل المشروع</span>
                             </button>
                             <button
                               onClick={() => {
                                 setActiveMenuId(null);
                                 onDeleteProject(p);
                               }}
-                              className="w-full text-right px-3 py-1.5 hover:bg-red-50 text-red-600 font-medium"
+                              className="w-full text-right px-3 py-1.5 hover:bg-red-50 text-red-600 font-medium flex items-center gap-1.5"
                             >
-                              حذف المشروع
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>حذف المشروع</span>
                             </button>
                           </div>
                         )}

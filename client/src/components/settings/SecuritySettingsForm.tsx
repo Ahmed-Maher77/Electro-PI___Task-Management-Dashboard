@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Lock, KeyRound, ShieldAlert } from 'lucide-react';
+import { updatePasswordApi } from '../../api/auth.api';
 import { Spinner } from '../Loader';
 
 export const SecuritySettingsForm: React.FC = () => {
@@ -11,7 +12,7 @@ export const SecuritySettingsForm: React.FC = () => {
   const [statusMsg, setStatusMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  const handlePasswordChange = (e: React.FormEvent) => {
+  const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatusMsg('');
     setErrorMsg('');
@@ -29,32 +30,36 @@ export const SecuritySettingsForm: React.FC = () => {
       return;
     }
 
-    setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setStatusMsg('تم تحديث كلمة المرور وحماية الحساب بنجاح');
+    try {
+      setIsSubmitting(true);
+      await updatePasswordApi({ currentPassword, newPassword });
+      setStatusMsg('تم تحديث كلمة المرور وحماية الحساب بنجاح في قاعدة البيانات');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
       setTimeout(() => setStatusMsg(''), 4000);
-    }, 800);
+    } catch (err: any) {
+      setErrorMsg(err.message || 'فشل تحديث كلمة المرور، يرجى التأكد من صحة كلمة المرور الحالية');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="space-y-6 text-xs">
       <div className="border-b border-slate-200 pb-3">
         <h2 className="text-sm font-bold text-slate-900">الأمان وكلمة المرور</h2>
-        <p className="text-[11px] text-slate-500 mt-0.5">تحديث كلمة المرور الخاصة بك وتأمين الجلسة الحالية.</p>
+        <p className="text-[11px] text-slate-500 mt-0.5">تحديث كلمة المرور الخاصة بك وتأمين الجلسة الحالية في قاعدة البيانات.</p>
       </div>
 
       {statusMsg && (
-        <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-md font-medium">
+        <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-md font-medium">
           {statusMsg}
         </div>
       )}
 
       {errorMsg && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-md font-medium">
+        <div className="p-3.5 bg-red-50 border border-red-200 text-red-700 rounded-md font-medium">
           {errorMsg}
         </div>
       )}
@@ -109,7 +114,7 @@ export const SecuritySettingsForm: React.FC = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-5 rounded-md transition-colors text-xs flex items-center gap-2"
+            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium py-2.5 px-5 rounded-md transition-colors text-xs flex items-center gap-2 cursor-pointer"
           >
             {isSubmitting ? <Spinner size="sm" /> : null}
             <span>{isSubmitting ? 'جاري التحديث...' : 'تحديث كلمة المرور'}</span>
