@@ -7,6 +7,7 @@ import routes from './routes/index.js';
 import { errorMiddleware } from './middleware/error.middleware.js';
 import { ApiError } from './utils/ApiError.js';
 import { env } from './config/env.js';
+import { connectDB } from './config/db.js';
 
 const app = express();
 
@@ -25,6 +26,16 @@ if (env.NODE_ENV !== 'test') {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Database connection guard middleware (ensures active DB connection in Production & Serverless)
+app.use(async (_req, _res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    next(new ApiError(500, `فشل الاتصال بقاعدة البيانات: ${err.message}`));
+  }
+});
 
 // Mount API routes
 app.use('/api', routes);
